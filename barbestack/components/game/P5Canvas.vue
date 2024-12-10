@@ -4,23 +4,35 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
-import p5 from 'p5';
+import Main from '~/scripts/game/main';
+
+// 型定義
+type P5 = typeof import('p5');
 
 const canvas = ref<HTMLDivElement | null>(null);
 
-const sketch = (p: p5) => {
-    p.setup = () => {
-        p.createCanvas(400, 400).parent(canvas.value!);
-    };
+onMounted(async () => {
+    // p5.js を動的にインポート
+    const p5Module: P5 = (await import('p5')).default;
 
-    p.draw = () => {
-        p.background(200);
-        p.ellipse(p.width / 2, p.height / 2, 50, 50);
-    };
-};
+    if (canvas.value) {
+        const sketch = (p: InstanceType<P5>) => {
+            const main = new Main(p);
 
-onMounted(() => {
-    new p5(sketch);
+            p.setup = () => {
+                main.setup();
+            };
+
+            p.draw = () => {
+                main.draw();
+            };
+        };
+
+        // p5 インスタンスを作成
+        new p5Module(sketch);
+    } else {
+        console.error('Canvas element is not available.');
+    }
 });
 </script>
 
