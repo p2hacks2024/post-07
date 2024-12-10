@@ -5,8 +5,10 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+  plugins: ['~/plugins/google-maps.client.ts'],
   runtimeConfig: {
     public: {
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     },
   },
   app: {
@@ -35,6 +37,4 @@ export default defineNuxtConfig({
       pathPrefix: false,
     },
   ],
-  plugins: [
-  ]
 })
