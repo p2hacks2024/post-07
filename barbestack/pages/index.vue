@@ -1,5 +1,5 @@
 <template>
     <div>
-        <P5Canvas />
+        <Camera />
     </div>
 </template>
