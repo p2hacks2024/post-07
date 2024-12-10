@@ -1,5 +1,6 @@
 <template>
     <div>
+      <Maps />
       <h1>QRコードリーダー</h1>
       <Camera @qrCodeDetected="handleQRCode" />
       <p v-if="scannedCode">スキャンしたQRコード: {{ scannedCode }}</p>
