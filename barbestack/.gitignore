@@ -1,3 +1,6 @@
+# mkcert
+*.pem
+
 # Nuxt dev/build outputs
 .output
 .data
