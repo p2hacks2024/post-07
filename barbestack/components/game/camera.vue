@@ -1,13 +1,14 @@
 <template>
   <div>
-    <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
-    <canvas ref="canvasElement" style="display: none;"></canvas>
+    <div class="video-wrapper">
+      <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
+      <ToggleSwitch class="toggle-switch" :value="isLightOn" @update:value="toggleLight" />
+      <ShutterButton class="shutter-button" @click="handleDetectQRCode" />
+    </div>
     <div>
       <button @click="startCamera">カメラを起動</button>
       <button @click="stopCamera" :disabled="!isCameraActive">カメラを停止</button>
-      <button @click="handleDetectQRCode" :disabled="!isCameraActive">QRコードを検出</button>
     </div>
-    <toggle-switch :value="isLightOn" @update:value="toggleLight" />
     <p v-if="qrCodeData.length > 0">検出されたQRコード: {{ qrCodeData.join(', ') }}</p>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
@@ -102,7 +103,7 @@ export default {
             emit('qrCodeDetected', validCodes);
             errorMessage.value = 'QRコードが正常に検出されました。';
           } else {
-            errorMessage.value = 'QRコードに "berbestack/" が含まれていません。';
+            errorMessage.value = 'QRコードに "barbestack/" が含まれていません。';
           }
         } else {
           errorMessage.value = 'QRコードが見つかりませんでした。';
@@ -140,9 +141,25 @@ export default {
 
 
 <style scoped>
+.video-wrapper {
+  position: relative;
+}
+
+.toggle-switch {
+  position: absolute;
+  bottom: 100px;
+  left: 100px;
+}
+
+.shutter-button {
+  position: absolute;
+  bottom: 100px;
+  left: 250px;
+}
+
 .camera-disp {
   width: 100vh;
-  height: 65vh;
+  height: 60vh;
   object-fit: cover;
   /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
