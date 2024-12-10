@@ -1,5 +1,5 @@
 <template>
-  <label class="toggle-switch">
+  <label class="toggle-switch" role="switch" :aria-checked="value">
     <input type="checkbox" :checked="value" @change="handleToggle" />
     <span class="slider"></span>
   </label>
@@ -19,8 +19,7 @@ export default defineComponent({
   emits: ['update:value'],
   methods: {
     handleToggle(event: Event) {
-      const target = event.target as HTMLInputElement;
-      this.$emit('update:value', target.checked);
+      this.$emit('update:value', (event.target as HTMLInputElement).checked);
     },
   },
 });
@@ -64,11 +63,11 @@ export default defineComponent({
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #2196f3;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(25px);
 }
 </style>

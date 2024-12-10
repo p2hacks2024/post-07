@@ -1,21 +1,22 @@
 <template>
   <div>
     <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
+    <canvas ref="canvasElement" style="display: none;"></canvas>
     <div>
       <button @click="startCamera">カメラを起動</button>
       <button @click="stopCamera" :disabled="!isCameraActive">カメラを停止</button>
       <button @click="handleDetectQRCode" :disabled="!isCameraActive">QRコードを検出</button>
     </div>
-    <toggle-switch v-model="isLightOn" @update:value="toggleLight" />
+    <toggle-switch :value="isLightOn" @update:value="toggleLight" />
     <p v-if="qrCodeData.length > 0">検出されたQRコード: {{ qrCodeData.join(', ') }}</p>
-    <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script lang="ts">
 import { ref, onUnmounted } from 'vue';
 import { detectQRCode } from '~/scripts/game/barcode';
-import ToggleSwitch from '~/components/atoms/ToggleSwitch.vue'; // トグルスイッチをインポート
+import ToggleSwitch from '~/components/atoms/ToggleSwitch.vue';
 
 export default {
   name: 'Camera',
@@ -34,21 +35,15 @@ export default {
       errorMessage.value = null;
       if (!videoElement.value) return;
 
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        errorMessage.value = 'このブラウザはカメラの起動をサポートしていません。';
-        return;
-      }
-
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment', torch: isLightOn.value },
+          video: { facingMode: 'environment' },
         });
         stream.value = mediaStream;
         videoElement.value.srcObject = mediaStream;
         isCameraActive.value = true;
       } catch (err) {
-        errorMessage.value = `カメラの起動に失敗しました: ${err}`;
-        console.error(err);
+        handleError('カメラの起動に失敗しました', err);
       }
     };
 
@@ -62,25 +57,22 @@ export default {
 
     const toggleLight = async (value: boolean) => {
       if (!stream.value) {
-        errorMessage.value = 'カメラが起動していません。';
+        handleError('カメラが起動していません。');
         return;
       }
 
-      const videoTrack = stream.value.getVideoTracks()[0];
-      const capabilities = videoTrack.getCapabilities();
+      try {
+        const videoTrack = stream.value.getVideoTracks()[0];
+        const capabilities = videoTrack.getCapabilities();
 
-      if ('torch' in capabilities) {
-        const settings = videoTrack.getSettings();
-        const constraints = { advanced: [{ torch: value }] };
-        try {
-          await videoTrack.applyConstraints(constraints);
+        if ('torch' in capabilities) {
+          await videoTrack.applyConstraints({ advanced: [{ torch: value }] });
           isLightOn.value = value;
-        } catch (err) {
-          console.error('ライト制御エラー:', err);
-          errorMessage.value = 'ライトの切り替えに失敗しました。';
+        } else {
+          handleError('このデバイスはライト制御をサポートしていません。');
         }
-      } else {
-        errorMessage.value = 'このデバイスはライト制御をサポートしていません。';
+      } catch (err) {
+        handleError('ライトの切り替えに失敗しました。', err);
       }
     };
 
@@ -100,20 +92,30 @@ export default {
         qrCodeData.value = codes;
 
         if (codes.length > 0) {
-          const validCodes = codes.filter((code) => code.includes('berbestack/'));
+          // フィルタリング処理
+          const validCodes = codes.filter((code) => {
+            console.log('QRコード:', code); // デバッグ用
+            return code.includes('barbestack/');
+          });
 
           if (validCodes.length > 0) {
             emit('qrCodeDetected', validCodes);
-            errorMessage.value = 'OK';
+            errorMessage.value = 'QRコードが正常に検出されました。';
           } else {
             errorMessage.value = 'QRコードに "berbestack/" が含まれていません。';
           }
         } else {
           errorMessage.value = 'QRコードが見つかりませんでした。';
         }
-      } catch (e: any) {
-        errorMessage.value = e.message;
+      } catch (err) {
+        handleError('QRコードの検出中にエラーが発生しました。', err);
       }
+    };
+
+
+    const handleError = (message: string, error?: any) => {
+      errorMessage.value = message;
+      if (error) console.error(message, error);
     };
 
     onUnmounted(() => {
@@ -136,11 +138,13 @@ export default {
 };
 </script>
 
+
 <style scoped>
 .camera-disp {
-  width: 100%;
-  height: 100vh;
-  object-fit: cover; /* カメラ映像が画面いっぱいに表示されるように調整 */
+  width: 100vh;
+  height: 65vh;
+  object-fit: cover;
+  /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
 }
 
