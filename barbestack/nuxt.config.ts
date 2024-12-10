@@ -36,5 +36,12 @@ export default defineNuxtConfig({
     },
   ],
   plugins: [
-  ]
+  ],
+  vite: {
+    resolve: {
+      alias: {
+        '@vueuse/core': require.resolve('@vueuse/core'),
+      },
+    },
+  }
 })
