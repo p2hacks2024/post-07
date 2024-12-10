@@ -7,6 +7,7 @@
       <button @click="stopCamera" :disabled="!isCameraActive">カメラを停止</button>
       <button @click="handleDetectQRCode" :disabled="!isCameraActive">QRコードを検出</button>
     </div>
+    <toggle-switch v-model="isLightOn" @update:value="toggleLight" />
     <p v-if="qrCodeData.length > 0">検出されたQRコード: {{ qrCodeData.join(', ') }}</p>
     <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
   </div>
@@ -14,10 +15,12 @@
 
 <script lang="ts">
 import { ref, onUnmounted } from 'vue';
-import { detectQRCode } from '~/scripts/game/barcode'; // barcode.js をインポート
+import { detectQRCode } from '~/scripts/game/barcode';
+import ToggleSwitch from '~/components/atoms/ToggleSwitch.vue'; // トグルスイッチをインポート
 
 export default {
   name: 'Camera',
+  components: { ToggleSwitch },
   emits: ['qrCodeDetected'],
   setup(_, { emit }) {
     const videoElement = ref<HTMLVideoElement | null>(null);
@@ -26,6 +29,7 @@ export default {
     const errorMessage = ref<string | null>(null);
     const isCameraActive = ref(false);
     const qrCodeData = ref<string[]>([]);
+    const isLightOn = ref(false);
 
     const startCamera = async () => {
       errorMessage.value = null;
@@ -38,7 +42,7 @@ export default {
 
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: { facingMode: 'environment', torch: isLightOn.value },
         });
         stream.value = mediaStream;
         videoElement.value.srcObject = mediaStream;
@@ -57,38 +61,61 @@ export default {
       }
     };
 
-    const handleDetectQRCode = async () => {
-  if (!canvasElement.value || !videoElement.value) return;
-
-  const canvas = canvasElement.value;
-  const context = canvas.getContext('2d');
-  if (!context) return;
-
-  canvas.width = videoElement.value.videoWidth;
-  canvas.height = videoElement.value.videoHeight;
-  context.drawImage(videoElement.value, 0, 0, canvas.width, canvas.height);
-
-  try {
-    const codes = await detectQRCode(canvas);
-    qrCodeData.value = codes;
-
-    if (codes.length > 0) {
-      // berbestack/ が含まれているか判定
-      const validCodes = codes.filter((code) => code.includes('berbestack/'));
-
-      if (validCodes.length > 0) {
-        emit('qrCodeDetected', validCodes);
-        errorMessage.value = 'OK'; // 成功メッセージを設定
-      } else {
-        errorMessage.value = 'QRコードに "berbestack/" が含まれていません。';
+    const toggleLight = async (value: boolean) => {
+      if (!stream.value) {
+        errorMessage.value = 'カメラが起動していません。';
+        return;
       }
-    } else {
-      errorMessage.value = 'QRコードが見つかりませんでした。';
-    }
-  } catch (e: any) {
-    errorMessage.value = e.message;
-  }
-};
+
+      const videoTrack = stream.value.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
+
+      if ('torch' in capabilities) {
+        const settings = videoTrack.getSettings();
+        const constraints = { advanced: [{ torch: value }] };
+        try {
+          await videoTrack.applyConstraints(constraints);
+          isLightOn.value = value;
+        } catch (err) {
+          console.error('ライト制御エラー:', err);
+          errorMessage.value = 'ライトの切り替えに失敗しました。';
+        }
+      } else {
+        errorMessage.value = 'このデバイスはライト制御をサポートしていません。';
+      }
+    };
+
+    const handleDetectQRCode = async () => {
+      if (!canvasElement.value || !videoElement.value) return;
+
+      const canvas = canvasElement.value;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+
+      canvas.width = videoElement.value.videoWidth;
+      canvas.height = videoElement.value.videoHeight;
+      context.drawImage(videoElement.value, 0, 0, canvas.width, canvas.height);
+
+      try {
+        const codes = await detectQRCode(canvas);
+        qrCodeData.value = codes;
+
+        if (codes.length > 0) {
+          const validCodes = codes.filter((code) => code.includes('berbestack/'));
+
+          if (validCodes.length > 0) {
+            emit('qrCodeDetected', validCodes);
+            errorMessage.value = 'OK';
+          } else {
+            errorMessage.value = 'QRコードに "berbestack/" が含まれていません。';
+          }
+        } else {
+          errorMessage.value = 'QRコードが見つかりませんでした。';
+        }
+      } catch (e: any) {
+        errorMessage.value = e.message;
+      }
+    };
 
     onUnmounted(() => {
       stopCamera();
@@ -103,6 +130,8 @@ export default {
       errorMessage,
       qrCodeData,
       isCameraActive,
+      isLightOn,
+      toggleLight,
     };
   },
 };
