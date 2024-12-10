@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap');
+
+* {
+    max-width: 100vw;
+    margin: 0;
+    padding: 0;
+    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", "sans-serif";
+    font-size: 18px;
+}
+
+main {
+    min-height: calc(100vh - 90px);
+    margin: 0;
+    padding: 0;
+    background-color: #FAFAFA;
+    --darkText: #303030;
+    --lightText: #EFEFEF;
+    color: var(--darkText);
+}
