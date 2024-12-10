@@ -1,5 +1,5 @@
 <template>
-    <div id="map" style="height: 500px;"></div>
+    <div id="map"></div>
 </template>
 
 <script setup>
@@ -14,8 +14,33 @@ onMounted(() => {
     const map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 41.841894, lng: 140.7666500 },
         zoom: 17.6,
-        tilt: 45, // 傾きを設定
-        heading: 30, // 回転角度（プログラム上で設定）
+        styles: [
+            {
+                featureType: "poi",
+                elementType: "labels.text",
+                stylers: [{ visibility: "off" }] // すべての施設のラベルを非表示
+            },
+            {
+                featureType: "poi.business",
+                elementType: "labels.text",
+                stylers: [{ visibility: "off" }] // 商業施設のラベルを非表示
+            },
+            {
+                featureType: "poi.school",
+                elementType: "labels.text",
+                stylers: [{ visibility: "off" }] // 学校のラベルを非表示
+            },
+            {
+                featureType: "poi.medical",
+                elementType: "labels.text",
+                stylers: [{ visibility: "off" }] // 医療施設のラベルを非表示
+            },
+            {
+                featureType: "poi.government",
+                elementType: "labels.text",
+                stylers: [{ visibility: "off" }] // 政府関連の施設のラベルを非表示
+            }
+        ],
         gestureHandling: 'none', // ユーザーによる回転を無効にする
         rotateControl: false, // 回転ボタンを無効にする
         zoomControl: false, // ズームボタンを無効にする
@@ -25,6 +50,8 @@ onMounted(() => {
         streetViewControl: false, // ストリートビューのコントロールを無効にする
         copyrightControl: false, // 右下のクレジット表示を無効にする
         logoControl: false, // 左下のGoogleロゴを無効にする
+        scaleControl: false, // 右下のスケール表示を無効にする
+        clickableIcons: false, // マーカーのクリックを無効にする
     })
 });
 </script>

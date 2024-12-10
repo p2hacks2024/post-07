@@ -1,7 +1,6 @@
 <template>
   <div>
-    <video ref="videoElement" autoplay playsinline></video>
-    <canvas ref="canvasElement" style="display: none;"></canvas>
+    <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
     <div>
       <button @click="startCamera">カメラを起動</button>
       <button @click="stopCamera" :disabled="!isCameraActive">カメラを停止</button>
@@ -138,9 +137,10 @@ export default {
 </script>
 
 <style scoped>
-video {
+.camera-disp {
   width: 100%;
-  height: auto;
+  height: 100vh;
+  object-fit: cover; /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
 }
 
