@@ -39,7 +39,10 @@ export default {
 
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: {
+            facingMode: 'environment',
+            advanced: [{ focusMode: 'continuous' }] as any,
+          },
         });
         stream.value = mediaStream;
         videoElement.value.srcObject = mediaStream;
@@ -99,47 +102,42 @@ export default {
     };
 
     const flashDetectQRCode = async () => {
-  if (!stream.value) {
-    handleError('カメラが起動していません。');
-    return;
-  }
-
-  const videoTrack = stream.value.getVideoTracks()[0];
-  const capabilities = videoTrack.getCapabilities();
-
-  if ('torch' in capabilities) {
-    try {
-      if (isLightOn.value) {
-        // フラッシュモードが有効な場合のみライトをオン
-        await videoTrack.applyConstraints({
-          advanced: [{ torch: true }] as any,
-        });
-
-        // 1秒間待機（ピント調整時間）
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (!stream.value) {
+        handleError('カメラが起動していません。');
+        return;
       }
 
-      // QRコードを検知
-      await handleDetectQRCode();
+      const videoTrack = stream.value.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
 
-      if (isLightOn.value) {
-        // フラッシュモードが有効な場合ライトをオフ
-        await videoTrack.applyConstraints({
-          advanced: [{ torch: false }] as any,
-        });
+      if ('torch' in capabilities) {
+        try {
+          if (isLightOn.value) {
+            // フラッシュモードが有効な場合のみライトをオン
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: true }] as any,
+            });
+
+            // 1秒間待機（ピント調整時間）
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          }
+
+          // QRコードを検知
+          await handleDetectQRCode();
+
+          if (isLightOn.value) {
+            // フラッシュモードが有効な場合ライトをオフ
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: false }] as any,
+            });
+          }
+        } catch (err) {
+          handleError('フラッシュ撮影に失敗しました。', err);
+        }
+      } else {
+        handleError('このデバイスはライト制御をサポートしていません。');
       }
-    } catch (err) {
-      handleError('フラッシュ撮影に失敗しました。', err);
-    }
-  } else {
-    handleError('このデバイスはライト制御をサポートしていません。');
-  }
-};
-
-
-
-
-
+    };
 
     const handleError = (message: string, error?: any) => {
       errorMessage.value = message;
