@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { ref } from 'vue';
-import KillLog from '~/components/molecules/KillLog.vue'; // 必要な場合
+import KillLog from '~/components/molecules/KillLogBox.vue'; // 必要な場合
 
 export default {
     name: 'Index',

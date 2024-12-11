@@ -154,7 +154,7 @@ export default {
       startCamera,
       stopCamera,
       handleDetectQRCode,
-      flashDetectQRCode, // 追加
+      flashDetectQRCode,
       errorMessage,
       qrCodeData,
       isCameraActive,
