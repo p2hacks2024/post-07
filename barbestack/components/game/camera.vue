@@ -2,6 +2,7 @@
   <div>
     <div class="video-wrapper">
       <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
+      <canvas ref="canvasElement" style="display: none;"></canvas>
       <ToggleSwitch class="toggle-switch" :value="isLightOn" @update:value="toggleLight" />
       <ShutterButton class="shutter-button" @click="handleDetectQRCode" />
     </div>
