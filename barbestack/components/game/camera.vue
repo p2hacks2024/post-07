@@ -136,11 +136,6 @@ export default {
   }
 };
 
-
-
-
-
-
     const handleError = (message: string, error?: any) => {
       errorMessage.value = message;
       if (error) console.error(message, error);
