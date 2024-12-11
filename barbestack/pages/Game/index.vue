@@ -5,6 +5,7 @@
             <p v-if="scannedCode">スキャンしたQRコード: {{ scannedCode }}</p>
         </div>
         <Maps class="maps" />
+        <img src="~/assets/images/target.png" alt="target" class="target" />
     </div>
 </template>
 
@@ -39,5 +40,15 @@ export default {
     width: 360px;
     height: 360px;
     transform: scale(0.4) translateX(-80%) translateY(-80%);
+}
+
+.target {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    width: 80vw;
+    height: auto;
+    z-index: 1;
 }
 </style>
