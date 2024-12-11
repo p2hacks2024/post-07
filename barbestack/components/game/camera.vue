@@ -4,7 +4,7 @@
       <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
       <canvas ref="canvasElement" style="display: none;"></canvas>
       <ToggleSwitch class="toggle-switch" :value="isLightOn" @update:value="toggleLight" />
-      <ShutterButton class="shutter-button" @click="handleDetectQRCode" />
+      <ShutterButton class="shutter-button" @click="flashDetectQRCode" />
     </div>
     <div>
       <button @click="startCamera">カメラを起動</button>
@@ -57,26 +57,10 @@ export default {
       }
     };
 
-    const toggleLight = async (value: boolean) => {
-      if (!stream.value) {
-        handleError('カメラが起動していません。');
-        return;
-      }
-
-      try {
-        const videoTrack = stream.value.getVideoTracks()[0];
-        const capabilities = videoTrack.getCapabilities();
-
-        if ('torch' in capabilities) {
-          await videoTrack.applyConstraints({ advanced: [{ torch: value }] });
-          isLightOn.value = value;
-        } else {
-          handleError('このデバイスはライト制御をサポートしていません。');
-        }
-      } catch (err) {
-        handleError('ライトの切り替えに失敗しました。', err);
-      }
+    const toggleLight = (value: boolean) => {
+      isLightOn.value = value; // フラッシュモードを切り替えるだけ
     };
+
 
     const handleDetectQRCode = async () => {
       if (!canvasElement.value || !videoElement.value) return;
@@ -114,6 +98,48 @@ export default {
       }
     };
 
+    const flashDetectQRCode = async () => {
+  if (!stream.value) {
+    handleError('カメラが起動していません。');
+    return;
+  }
+
+  const videoTrack = stream.value.getVideoTracks()[0];
+  const capabilities = videoTrack.getCapabilities();
+
+  if ('torch' in capabilities) {
+    try {
+      if (isLightOn.value) {
+        // フラッシュモードが有効な場合のみライトをオン
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: true }] as any,
+        });
+
+        // 1秒間待機（ピント調整時間）
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+
+      // QRコードを検知
+      await handleDetectQRCode();
+
+      if (isLightOn.value) {
+        // フラッシュモードが有効な場合ライトをオフ
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: false }] as any,
+        });
+      }
+    } catch (err) {
+      handleError('フラッシュ撮影に失敗しました。', err);
+    }
+  } else {
+    handleError('このデバイスはライト制御をサポートしていません。');
+  }
+};
+
+
+
+
+
 
     const handleError = (message: string, error?: any) => {
       errorMessage.value = message;
@@ -130,6 +156,7 @@ export default {
       startCamera,
       stopCamera,
       handleDetectQRCode,
+      flashDetectQRCode, // 追加
       errorMessage,
       qrCodeData,
       isCameraActive,
