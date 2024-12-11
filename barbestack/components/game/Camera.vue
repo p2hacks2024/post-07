@@ -187,7 +187,7 @@ export default {
 
 .camera-disp {
   width: 100vh;
-  height: 60vh;
+  height: 100vh;
   object-fit: cover;
   /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
