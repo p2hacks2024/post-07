@@ -3,7 +3,9 @@
         <div>
             <Camera @qrCodeDetected="handleQRCode" />
             <KillLog ref="killLogRef" />
-            <button @click="addTestKillLog">デバッグ用キルログ追加</button>
+            <!-- デバッグ用ボタン -->
+            <button @click="addKillLogType1">デバッグ用キルログ1追加</button>
+            <button @click="addKillLogType2">デバッグ用キルログ2追加</button>
             <p v-if="scannedCode">スキャンしたQRコード: {{ scannedCode }}</p>
         </div>
         <Maps class="maps" />
@@ -13,7 +15,7 @@
 
 <script lang="ts">
 import { ref } from 'vue';
-import KillLog from '~/components/molecules/KillLogBox.vue'; // 必要な場合
+import KillLog from '~/components/molecules/KillLogBox.vue';
 
 export default {
     name: 'Index',
@@ -27,13 +29,19 @@ export default {
             scannedCode.value = code; // QRコードの内容を保存
         };
 
-        // KillLogコンポーネントの型を指定
         const killLogRef = ref<{ addKillLog: (killer: string, victim: string) => void } | null>(null);
 
-        // デバッグ用のキルログを追加するメソッド
-        const addTestKillLog = () => {
+        // デバッグ用キルログを追加するメソッド（タイプ1）
+        const addKillLogType1 = () => {
             if (killLogRef.value) {
                 killLogRef.value.addKillLog('Player1', 'Player2'); // Player1がPlayer2をキル
+            }
+        };
+
+        // デバッグ用キルログを追加するメソッド（タイプ2）
+        const addKillLogType2 = () => {
+            if (killLogRef.value) {
+                killLogRef.value.addKillLog('Player3', 'Player4'); // Player3がPlayer4をキル
             }
         };
 
@@ -41,7 +49,8 @@ export default {
             scannedCode,
             handleQRCode,
             killLogRef,
-            addTestKillLog,
+            addKillLogType1,
+            addKillLogType2,
         };
     },
 };
