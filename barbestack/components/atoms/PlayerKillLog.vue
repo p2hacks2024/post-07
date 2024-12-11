@@ -1,18 +1,12 @@
 <template>
-  <div class="kill-log-item">
-    <span class="killer">{{ killer }}</span> <span class="victim">{{ victim }}</span>
-  </div>
+  <div class="kill-log-item">{{ message }}</div>
 </template>
 
 <script lang="ts">
 export default {
   name: 'PlayerKillLog',
   props: {
-    killer: {
-      type: String,
-      required: true,
-    },
-    victim: {
+    message: {
       type: String,
       required: true,
     },
@@ -22,17 +16,12 @@ export default {
 
 <style scoped>
 .kill-log-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px;
-  font-size: 16px;
-}
-
-.killer {
-  font-weight: bold;
-}
-
-.victim {
-  color: #f00;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 8px;
+  margin: 3px 0;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
 }
 </style>

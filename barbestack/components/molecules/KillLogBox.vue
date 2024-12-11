@@ -1,11 +1,6 @@
 <template>
   <div class="kill-log-container">
-    <PlayerKillLog
-      v-for="(log, index) in killLogs"
-      :key="index"
-      :killer="log.killer"
-      :victim="log.victim"
-    />
+    <PlayerKillLog v-for="(log, index) in killLogs" :key="index" :message="`${log.killer}：${log.victim}を倒した`" />
   </div>
 </template>
 
@@ -67,9 +62,10 @@ export default {
 .kill-log-container {
   position: fixed;
   top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 300px;
+  right: 10px;
+  /* 右上に配置 */
+  max-width: 250px;
+  /* サイズを少し小さく */
   z-index: 999;
   display: flex;
   flex-direction: column-reverse;
@@ -78,9 +74,12 @@ export default {
 .kill-log-item {
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 10px;
-  margin: 5px 0;
+  padding: 8px;
+  /* パディングを少し小さく */
+  margin: 3px 0;
+  /* ログ間の間隔を狭める */
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 12px;
+  /* フォントサイズを小さく */
 }
 </style>
