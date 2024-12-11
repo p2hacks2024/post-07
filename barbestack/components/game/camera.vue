@@ -1,22 +1,28 @@
 <template>
   <div>
-    <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
+    <div class="video-wrapper">
+      <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
+      <canvas ref="canvasElement" style="display: none;"></canvas>
+      <ToggleSwitch class="toggle-switch" :value="isLightOn" @update:value="toggleLight" />
+      <ShutterButton class="shutter-button" @click="flashDetectQRCode" />
+    </div>
     <div>
       <button @click="startCamera">カメラを起動</button>
       <button @click="stopCamera" :disabled="!isCameraActive">カメラを停止</button>
-      <button @click="handleDetectQRCode" :disabled="!isCameraActive">QRコードを検出</button>
     </div>
     <p v-if="qrCodeData.length > 0">検出されたQRコード: {{ qrCodeData.join(', ') }}</p>
-    <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script lang="ts">
 import { ref, onUnmounted } from 'vue';
-import { detectQRCode } from '~/scripts/game/barcode'; // barcode.js をインポート
+import { detectQRCode } from '~/scripts/game/barcode';
+import ToggleSwitch from '~/components/atoms/ToggleSwitch.vue';
 
 export default {
   name: 'Camera',
+  components: { ToggleSwitch },
   emits: ['qrCodeDetected'],
   setup(_, { emit }) {
     const videoElement = ref<HTMLVideoElement | null>(null);
@@ -25,15 +31,11 @@ export default {
     const errorMessage = ref<string | null>(null);
     const isCameraActive = ref(false);
     const qrCodeData = ref<string[]>([]);
+    const isLightOn = ref(false);
 
     const startCamera = async () => {
       errorMessage.value = null;
       if (!videoElement.value) return;
-
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        errorMessage.value = 'このブラウザはカメラの起動をサポートしていません。';
-        return;
-      }
 
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -43,8 +45,7 @@ export default {
         videoElement.value.srcObject = mediaStream;
         isCameraActive.value = true;
       } catch (err) {
-        errorMessage.value = `カメラの起動に失敗しました: ${err}`;
-        console.error(err);
+        handleError('カメラの起動に失敗しました', err);
       }
     };
 
@@ -56,38 +57,94 @@ export default {
       }
     };
 
+    const toggleLight = (value: boolean) => {
+      isLightOn.value = value; // フラッシュモードを切り替えるだけ
+    };
+
+
     const handleDetectQRCode = async () => {
-  if (!canvasElement.value || !videoElement.value) return;
+      if (!canvasElement.value || !videoElement.value) return;
 
-  const canvas = canvasElement.value;
-  const context = canvas.getContext('2d');
-  if (!context) return;
+      const canvas = canvasElement.value;
+      const context = canvas.getContext('2d');
+      if (!context) return;
 
-  canvas.width = videoElement.value.videoWidth;
-  canvas.height = videoElement.value.videoHeight;
-  context.drawImage(videoElement.value, 0, 0, canvas.width, canvas.height);
+      canvas.width = videoElement.value.videoWidth;
+      canvas.height = videoElement.value.videoHeight;
+      context.drawImage(videoElement.value, 0, 0, canvas.width, canvas.height);
 
-  try {
-    const codes = await detectQRCode(canvas);
-    qrCodeData.value = codes;
+      try {
+        const codes = await detectQRCode(canvas);
+        qrCodeData.value = codes;
 
-    if (codes.length > 0) {
-      // berbestack/ が含まれているか判定
-      const validCodes = codes.filter((code) => code.includes('berbestack/'));
+        if (codes.length > 0) {
+          // フィルタリング処理
+          const validCodes = codes.filter((code) => {
+            console.log('QRコード:', code); // デバッグ用
+            return code.includes('barbestack/');
+          });
 
-      if (validCodes.length > 0) {
-        emit('qrCodeDetected', validCodes);
-        errorMessage.value = 'OK'; // 成功メッセージを設定
-      } else {
-        errorMessage.value = 'QRコードに "berbestack/" が含まれていません。';
+          if (validCodes.length > 0) {
+            emit('qrCodeDetected', validCodes);
+            errorMessage.value = 'QRコードが正常に検出されました。';
+          } else {
+            errorMessage.value = 'QRコードに "barbestack/" が含まれていません。';
+          }
+        } else {
+          errorMessage.value = 'QRコードが見つかりませんでした。';
+        }
+      } catch (err) {
+        handleError('QRコードの検出中にエラーが発生しました。', err);
       }
-    } else {
-      errorMessage.value = 'QRコードが見つかりませんでした。';
+    };
+
+    const flashDetectQRCode = async () => {
+  if (!stream.value) {
+    handleError('カメラが起動していません。');
+    return;
+  }
+
+  const videoTrack = stream.value.getVideoTracks()[0];
+  const capabilities = videoTrack.getCapabilities();
+
+  if ('torch' in capabilities) {
+    try {
+      if (isLightOn.value) {
+        // フラッシュモードが有効な場合のみライトをオン
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: true }] as any,
+        });
+
+        // 1秒間待機（ピント調整時間）
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+
+      // QRコードを検知
+      await handleDetectQRCode();
+
+      if (isLightOn.value) {
+        // フラッシュモードが有効な場合ライトをオフ
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: false }] as any,
+        });
+      }
+    } catch (err) {
+      handleError('フラッシュ撮影に失敗しました。', err);
     }
-  } catch (e: any) {
-    errorMessage.value = e.message;
+  } else {
+    handleError('このデバイスはライト制御をサポートしていません。');
   }
 };
+
+
+
+
+
+
+    const handleError = (message: string, error?: any) => {
+      errorMessage.value = message;
+      if (error) console.error(message, error);
+    };
 
     onUnmounted(() => {
       stopCamera();
@@ -99,19 +156,40 @@ export default {
       startCamera,
       stopCamera,
       handleDetectQRCode,
+      flashDetectQRCode, // 追加
       errorMessage,
       qrCodeData,
       isCameraActive,
+      isLightOn,
+      toggleLight,
     };
   },
 };
 </script>
 
+
 <style scoped>
+.video-wrapper {
+  position: relative;
+}
+
+.toggle-switch {
+  position: absolute;
+  bottom: 100px;
+  left: 100px;
+}
+
+.shutter-button {
+  position: absolute;
+  bottom: 100px;
+  left: 250px;
+}
+
 .camera-disp {
-  width: 100%;
-  height: 100vh;
-  object-fit: cover; /* カメラ映像が画面いっぱいに表示されるように調整 */
+  width: 100vh;
+  height: 60vh;
+  object-fit: cover;
+  /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
 }
 
