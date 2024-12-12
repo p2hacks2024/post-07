@@ -3,9 +3,8 @@
         <div>
             <Camera @qrCodeDetected="handleQRCode" />
             <KillLog ref="killLogRef" />
-            <!-- デバッグ用ボタン -->
-            <button @click="addKillLogType1">デバッグ用キルログ1追加</button>
-            <button @click="addKillLogType2">デバッグ用キルログ2追加</button>
+            <button @click="addKillLogType1">デバッグ用キルログ追加 (タイプ1)</button>
+            <button @click="addKillLogType2">デバッグ用キルログ追加 (タイプ2)</button>
             <p v-if="scannedCode">スキャンしたQRコード: {{ scannedCode }}</p>
         </div>
         <Maps class="maps" />
@@ -15,12 +14,12 @@
 
 <script lang="ts">
 import { ref } from 'vue';
-import KillLog from '~/components/molecules/KillLogBox.vue';
+import KillLogList from '~/components/molecules/KillLogList.vue';
 
 export default {
     name: 'Index',
     components: {
-        KillLog,
+        KillLog: KillLogList, // KillLogList を使用
     },
     setup() {
         const scannedCode = ref<string | null>(null);
@@ -79,5 +78,19 @@ export default {
     width: 80vw;
     height: auto;
     z-index: 1;
+}
+
+button {
+    margin: 5px;
+    /* padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer; */
+}
+
+button:hover {
+    background-color: #0056b3;
 }
 </style>

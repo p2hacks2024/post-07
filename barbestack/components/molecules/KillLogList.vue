@@ -1,33 +1,35 @@
 <template>
-  <div class="kill-log-container">
-    <PlayerKillLog v-for="(log, index) in killLogs" :key="index" :message="`${log.killer}：${log.victim}を倒した`" />
+  <div class="kill-log-list">
+    <KillLogMessage
+      v-for="(log, index) in killLogs"
+      :key="index"
+      :killer="log.killer"
+      :victim="log.victim"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import PlayerKillLog from '~/components/atoms/PlayerKillLog.vue';
+import { defineComponent, ref } from 'vue';
+import KillLogMessage from '~/components/atoms/KillLogMessage.vue';
 
 interface KillLog {
   killer: string;
   victim: string;
 }
 
-export default {
-  name: 'KillLog',
+export default defineComponent({
+  name: 'KillLogList',
   components: {
-    PlayerKillLog,
+    KillLogMessage,
   },
   setup() {
     const killLogs = ref<KillLog[]>([]);
-    const maxLogCount = 5; // 画面に表示する最大数
+    const maxLogCount = 5;
 
-    // キルログを追加する関数
     const addKillLog = (killer: string, victim: string) => {
       const newLog: KillLog = { killer, victim };
       killLogs.value.push(newLog);
-
-      // ログが多すぎる場合、最古のものを削除
       if (killLogs.value.length > maxLogCount) {
         killLogs.value.shift();
       }
@@ -55,31 +57,17 @@ export default {
       addKillLog,
     };
   },
-};
+});
 </script>
 
 <style scoped>
-.kill-log-container {
+.kill-log-list {
   position: fixed;
   top: 10px;
   right: 10px;
-  /* 右上に配置 */
   max-width: 250px;
-  /* サイズを少し小さく */
-  z-index: 999;
+  z-index: 1000;
   display: flex;
   flex-direction: column-reverse;
-}
-
-.kill-log-item {
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 8px;
-  /* パディングを少し小さく */
-  margin: 3px 0;
-  /* ログ間の間隔を狭める */
-  border-radius: 4px;
-  font-size: 12px;
-  /* フォントサイズを小さく */
 }
 </style>
