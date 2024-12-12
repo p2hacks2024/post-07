@@ -10,11 +10,11 @@
             <UnderBalckBackground class="under-black-background" />
             <div class="under-buttons">
                 <button class="view-button" @click="changeView">
-                    <img src="~/assets/images/ViewButton.png" alt="button" />
+                    <img src="~/assets/images/ViewButton.png" :class='isView ? "view" : "isView"' alt="button" />
                 </button>
                 <ShutterButton @click="triggerCameraScan" />
-                <button class="flash-button">
-                    <img src="~/assets/images/FlashButton.png" alt="button" />
+                <button class="flash-button" @click="changeFlash">
+                    <img src="~/assets/images/FlashButton.png" :class=flashPattern alt="button" />
                 </button>
             </div>
         </div>
@@ -31,6 +31,9 @@ export default {
         const scannedCode = ref<string | null>(null);
         const camera = ref(null); // Camera コンポーネントへの参照
         const isView = ref(true);
+        const flashPatterns = ['flash-off', 'flash-auto', 'flash-on'];
+        const flashPatternNum = ref(0);
+        const flashPattern = ref("");
 
         const handleQRCode = (code: string) => {
             scannedCode.value = code; // QRコードの内容を保存
@@ -44,11 +47,19 @@ export default {
             isView.value = !isView.value;
         };
 
+        const changeFlash = () => {
+            flashPatternNum.value = (flashPatternNum.value + 1) % flashPatterns.length;
+            (camera.value as any)?.changeLightType(flashPatternNum.value);
+            flashPattern.value = flashPatterns[flashPatternNum.value];
+        };
+
         return {
             scannedCode,
             handleQRCode,
             triggerCameraScan,
             changeView,
+            changeFlash,
+            flashPattern,
             isView,
             camera,
         };
@@ -117,5 +128,17 @@ button {
     transform: translateX(-10px);
     width: 50px;
     margin: auto;
+}
+
+.isView {
+    filter: brightness(0.65);
+}
+
+.flash-auto {
+    filter: brightness(1.2) sepia(1) saturate(8) hue-rotate(10deg);
+}
+
+.flash-on {
+    filter: brightness(1.2) sepia(1) saturate(20) hue-rotate(-50deg);
 }
 </style>
