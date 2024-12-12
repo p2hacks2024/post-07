@@ -1,11 +1,13 @@
 <template>
-    <div id="map" :class="isViewMapMode ? 'view-map-mode' : 'small-map-mode' " />
+    <div id="map" :class="isViewMapMode ? 'view-map-mode' : 'small-map-mode'" />
 </template>
 
 <script setup>
 import { onMounted, onUnmounted, defineExpose } from 'vue';
 
 const isViewMapMode = ref(false);
+
+let locations = [];
 
 onMounted(() => {
     if (!window.google || !google.maps) {
@@ -81,6 +83,19 @@ onMounted(() => {
                     // 内側の濃い青丸の位置を更新
                     innerCircle.setCenter(currentLocation);
                 }
+
+                for (const _location of locations) {
+                    new google.maps.Circle({
+                        strokeColor: "#FF0000", // 赤色
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: "#FF0000",
+                        fillOpacity: 0.4,
+                        map: map,
+                        center: _location,
+                        radius: 3, // 半径 5m
+                    });
+                }
             },
             (error) => {
                 console.error('現在地を取得できませんでした:', error);
@@ -96,6 +111,11 @@ onMounted(() => {
         console.error('このブラウザは現在地情報をサポートしていません。');
     }
 });
+
+// 座標データを受け取り、赤丸でプロットする関数
+const plotLocations = (_locations) => {
+    locations = _locations;
+}
 
 const changeViewMode = () => {
     isViewMapMode.value = !isViewMapMode.value;
@@ -123,6 +143,19 @@ const changeViewMode = () => {
             scaleControl: false,
             clickableIcons: false,
         });
+
+        for (const _location of _locations) {
+            new google.maps.Circle({
+                strokeColor: "#FF0000", // 赤色
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#FF0000",
+                fillOpacity: 0.4,
+                map: map,
+                center: _location,
+                radius: 3, // 半径 5m
+            });
+        }
     }
     else {
         const map = new google.maps.Map(document.getElementById('map'), {
@@ -147,6 +180,19 @@ const changeViewMode = () => {
             scaleControl: false,
             clickableIcons: false,
         });
+
+        for (const _location of _locations) {
+            new google.maps.Circle({
+                strokeColor: "#FF0000", // 赤色
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#FF0000",
+                fillOpacity: 0.4,
+                map: map,
+                center: _location,
+                radius: 3, // 半径 5m
+            });
+        }
     }
 };
 
@@ -157,6 +203,7 @@ const getIsViewMapMode = () => {
 defineExpose({
     changeViewMode,
     getIsViewMapMode,
+    plotLocations,
 });
 </script>
 
