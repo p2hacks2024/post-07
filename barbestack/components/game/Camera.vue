@@ -4,12 +4,6 @@
       <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
       <canvas ref="canvasElement" style="display: none;"></canvas>
     </div>
-    <div>
-      <button @click="startCamera">カメラを起動</button>
-      <button @click="stopCamera" :disabled="!isCameraActive">カメラを停止</button>
-    </div>
-    <p v-if="qrCodeData.length > 0">検出されたQRコード: {{ qrCodeData.join(', ') }}</p>
-    <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
 </template>
 
@@ -19,8 +13,7 @@ import { detectQRCode } from '~/scripts/game/barcode';
 
 export default {
   name: 'Camera',
-  emits: ['qrCodeDetected'],
-  setup(_, { emit }) {
+  setup() {
     const videoElement = ref<HTMLVideoElement | null>(null);
     const canvasElement = ref<HTMLCanvasElement | null>(null);
     const stream = ref<MediaStream | null>(null);
@@ -32,11 +25,15 @@ export default {
 
     const startCamera = async () => {
       errorMessage.value = null;
+
       if (!videoElement.value) return;
 
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: {
+            facingMode: 'environment',
+            advanced: [{ focusMode: 'continuous' }] as any,
+          },
         });
         stream.value = mediaStream;
         videoElement.value.srcObject = mediaStream;
@@ -56,6 +53,7 @@ export default {
 
     const changeLightType = async (value: number) => {
       lightType.value = value; // フラッシュモードを切り替えるだけ
+
       if (!stream.value) {
         handleError('カメラが起動していません。');
         return;
@@ -86,7 +84,6 @@ export default {
       }
     };
 
-
     const handleDetectQRCode = async () => {
       if (!canvasElement.value || !videoElement.value) return;
 
@@ -110,23 +107,20 @@ export default {
           });
 
           if (validCodes.length > 0) {
-            emit('qrCodeDetected', validCodes);
-            errorMessage.value = 'QRコードが正常に検出されました。';
-          } else {
-            errorMessage.value = 'QRコードに "barbestack/" が含まれていません。';
+            return validCodes;
           }
-        } else {
-          errorMessage.value = 'QRコードが見つかりませんでした。';
         }
       } catch (err) {
         handleError('QRコードの検出中にエラーが発生しました。', err);
       }
+      return null;
     };
 
-    const flashDetectQRCode = async () => {
+    const shutterDetectQRCode = async () => {
+
       if (!stream.value) {
         handleError('カメラが起動していません。');
-        return;
+        return null;
       }
 
       const videoTrack = stream.value.getVideoTracks()[0];
@@ -146,7 +140,7 @@ export default {
           }
 
           // QRコードを検知
-          await handleDetectQRCode();
+          const codeValue = await handleDetectQRCode();
 
           if (lightType.value != 2) {
             // フラッシュモードが有効な場合ライトをオフ
@@ -154,17 +148,25 @@ export default {
               advanced: [{ torch: false }] as any,
             });
           }
+
+          return codeValue;
         } catch (err) {
           handleError('フラッシュ撮影に失敗しました。', err);
+          return null;
         }
       } else {
         handleError('このデバイスはライト制御をサポートしていません。');
+        return null;
       }
     };
 
     const handleError = (message: string, error?: any) => {
       errorMessage.value = message;
       if (error) console.error(message, error);
+    };
+
+    const getIsCameraActive = (): boolean => {
+      return isCameraActive.value;
     };
 
     onUnmounted(() => {
@@ -177,11 +179,12 @@ export default {
       startCamera,
       stopCamera,
       handleDetectQRCode,
-      flashDetectQRCode, // 追加
+      shutterDetectQRCode,
       errorMessage,
       qrCodeData,
       isCameraActive,
       changeLightType,
+      getIsCameraActive,
     };
   },
 };
@@ -191,6 +194,8 @@ export default {
 <style scoped>
 .video-wrapper {
   position: relative;
+  width: 100%;
+  height: 100svh;
 }
 
 .toggle-switch {
@@ -207,7 +212,7 @@ export default {
 
 .camera-disp {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   object-fit: cover;
   /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
