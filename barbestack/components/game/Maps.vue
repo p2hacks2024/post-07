@@ -144,7 +144,7 @@ const changeViewMode = () => {
             clickableIcons: false,
         });
 
-        for (const _location of _locations) {
+        for (const _location of locations) {
             new google.maps.Circle({
                 strokeColor: "#FF0000", // 赤色
                 strokeOpacity: 0.8,
@@ -181,7 +181,7 @@ const changeViewMode = () => {
             clickableIcons: false,
         });
 
-        for (const _location of _locations) {
+        for (const _location of locations) {
             new google.maps.Circle({
                 strokeColor: "#FF0000", // 赤色
                 strokeOpacity: 0.8,

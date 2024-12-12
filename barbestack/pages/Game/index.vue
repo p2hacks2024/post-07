@@ -108,6 +108,7 @@ const addKillLog = (killer: string, victim: string) => {
     } else {
         console.error("killLogRef is not set.");
     }
+    maps.value?.plotLocations([{ lat: 41.84162548819161, lng: 140.76630721848127 }]);
 };
 
 const changeMapMode = () => {
