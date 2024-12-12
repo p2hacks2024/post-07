@@ -3,8 +3,6 @@
     <div class="video-wrapper">
       <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
       <canvas ref="canvasElement" style="display: none;"></canvas>
-      <ToggleSwitch class="toggle-switch" :value="isLightOn" @update:value="toggleLight" />
-      <ShutterButton class="shutter-button" @click="flashDetectQRCode" />
     </div>
     <div>
       <button @click="startCamera">カメラを起動</button>
@@ -18,11 +16,9 @@
 <script lang="ts">
 import { ref, onUnmounted } from 'vue';
 import { detectQRCode } from '~/scripts/game/barcode';
-import ToggleSwitch from '~/components/atoms/ToggleSwitch.vue';
 
 export default {
   name: 'Camera',
-  components: { ToggleSwitch },
   emits: ['qrCodeDetected'],
   setup(_, { emit }) {
     const videoElement = ref<HTMLVideoElement | null>(null);
@@ -31,7 +27,8 @@ export default {
     const errorMessage = ref<string | null>(null);
     const isCameraActive = ref(false);
     const qrCodeData = ref<string[]>([]);
-    const isLightOn = ref(false);
+    const lightType = ref(0);
+
 
     const startCamera = async () => {
       errorMessage.value = null;
@@ -60,8 +57,36 @@ export default {
       }
     };
 
-    const toggleLight = (value: boolean) => {
-      isLightOn.value = value; // フラッシュモードを切り替えるだけ
+    const changeLightType = async (value: number) => {
+      lightType.value = value; // フラッシュモードを切り替えるだけ
+      if (!stream.value) {
+        handleError('カメラが起動していません。');
+        return;
+      }
+
+      const videoTrack = stream.value.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
+
+      if ('torch' in capabilities) {
+        try {
+          if (lightType.value == 2) {
+            // フラッシュモードが有効な場合のみライトをオン
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: true }] as any,
+            });
+          }
+          else {
+            // フラッシュモードが有効な場合ライトをオフ
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: false }] as any,
+            });
+          }
+        } catch (err) {
+          handleError('フラッシュの変更に失敗しました。', err);
+        }
+      } else {
+        handleError('このデバイスはライト制御をサポートしていません。');
+      }
     };
 
 
@@ -112,20 +137,21 @@ export default {
 
       if ('torch' in capabilities) {
         try {
-          if (isLightOn.value) {
+          // 自動フラッシュモード
+          if (lightType.value == 1) {
             // フラッシュモードが有効な場合のみライトをオン
             await videoTrack.applyConstraints({
               advanced: [{ torch: true }] as any,
             });
 
-            // 1秒間待機（ピント調整時間）
+            // 2秒間待機（ピント調整時間）
             await new Promise((resolve) => setTimeout(resolve, 2000));
           }
 
           // QRコードを検知
           await handleDetectQRCode();
 
-          if (isLightOn.value) {
+          if (lightType.value != 2) {
             // フラッシュモードが有効な場合ライトをオフ
             await videoTrack.applyConstraints({
               advanced: [{ torch: false }] as any,
@@ -158,8 +184,7 @@ export default {
       errorMessage,
       qrCodeData,
       isCameraActive,
-      isLightOn,
-      toggleLight,
+      changeLightType,
     };
   },
 };
@@ -169,6 +194,8 @@ export default {
 <style scoped>
 .video-wrapper {
   position: relative;
+  width: 100%;
+  height: 100svh;
 }
 
 .toggle-switch {
@@ -184,8 +211,8 @@ export default {
 }
 
 .camera-disp {
-  width: 100vh;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
