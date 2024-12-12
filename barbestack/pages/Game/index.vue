@@ -3,9 +3,11 @@
         <div>
             <Camera @qrCodeDetected="handleQRCode" />
             <KillLog ref="killLogRef" />
-            <button @click="addKillLogType1">デバッグ用キルログ追加 (タイプ1)</button>
-            <button @click="addKillLogType2">デバッグ用キルログ追加 (タイプ2)</button>
-            <p v-if="scannedCode">スキャンしたQRコード: {{ scannedCode }}</p>
+            <div class="killlog-buttons">
+                <button @click="addKillLogType1">デバッグ用キルログ追加 (タイプ1)</button>
+                <button @click="addKillLogType2">デバッグ用キルログ追加 (タイプ2)</button>
+                <p v-if="scannedCode">スキャンしたQRコード: {{ scannedCode }}</p>
+            </div>
         </div>
         <Maps class="maps" v-show="isView" />
         <img src="~/assets/images/target.png" alt="target" class="target" />
@@ -29,9 +31,6 @@ import { ref } from 'vue';
 
 export default {
     name: 'Index',
-    components: {
-        KillLog: KillLogList, // KillLogList を使用
-    },
     setup() {
         const scannedCode = ref<string | null>(null);
         const camera = ref(null); // Camera コンポーネントへの参照
@@ -58,6 +57,7 @@ export default {
             if (killLogRef.value) {
                 killLogRef.value.addKillLog('Player3', 'Player4'); // Player3がPlayer4をキル
             }
+        }
 
         const triggerCameraScan = () => {
             (camera.value as any)?.flashDetectQRCode();
@@ -71,6 +71,7 @@ export default {
             flashPatternNum.value = (flashPatternNum.value + 1) % flashPatterns.length;
             (camera.value as any)?.changeLightType(flashPatternNum.value);
             flashPattern.value = flashPatterns[flashPatternNum.value];
+        }
 
         return {
             scannedCode,
@@ -115,20 +116,6 @@ export default {
     width: 90vw;
     height: auto;
     z-index: 1;
-}
-
-button {
-    margin: 5px;
-    /* padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer; */
-}
-
-button:hover {
-    background-color: #0056b3;
 }
 
 .under-buttons-area {
@@ -179,5 +166,10 @@ button {
 
 .flash-on {
     filter: brightness(1.2) sepia(1) saturate(20) hue-rotate(-50deg);
+}
+
+.killlog-buttons {
+    color: white;
+    z-index: 100;
 }
 </style>
