@@ -18,11 +18,9 @@
 <script lang="ts">
 import { ref, onUnmounted } from 'vue';
 import { detectQRCode } from '~/scripts/game/barcode';
-import ToggleSwitch from '~/components/atoms/ToggleSwitch.vue';
 
 export default {
   name: 'Camera',
-  components: { ToggleSwitch },
   emits: ['qrCodeDetected'],
   setup(_, { emit }) {
     const videoElement = ref<HTMLVideoElement | null>(null);
