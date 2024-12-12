@@ -3,8 +3,6 @@
     <div class="video-wrapper">
       <video ref="videoElement" class="camera-disp" autoplay playsinline></video>
       <canvas ref="canvasElement" style="display: none;"></canvas>
-      <ToggleSwitch class="toggle-switch" :value="isLightOn" @update:value="toggleLight" />
-      <ShutterButton class="shutter-button" @click="flashDetectQRCode" />
     </div>
     <div>
       <button @click="startCamera">カメラを起動</button>
@@ -29,7 +27,8 @@ export default {
     const errorMessage = ref<string | null>(null);
     const isCameraActive = ref(false);
     const qrCodeData = ref<string[]>([]);
-    const isLightOn = ref(false);
+    const lightType = ref(0);
+
 
     const startCamera = async () => {
       errorMessage.value = null;
@@ -55,8 +54,36 @@ export default {
       }
     };
 
-    const toggleLight = (value: boolean) => {
-      isLightOn.value = value; // フラッシュモードを切り替えるだけ
+    const changeLightType = async (value: number) => {
+      lightType.value = value; // フラッシュモードを切り替えるだけ
+      if (!stream.value) {
+        handleError('カメラが起動していません。');
+        return;
+      }
+
+      const videoTrack = stream.value.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
+
+      if ('torch' in capabilities) {
+        try {
+          if (lightType.value == 2) {
+            // フラッシュモードが有効な場合のみライトをオン
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: true }] as any,
+            });
+          }
+          else {
+            // フラッシュモードが有効な場合ライトをオフ
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: false }] as any,
+            });
+          }
+        } catch (err) {
+          handleError('フラッシュの変更に失敗しました。', err);
+        }
+      } else {
+        handleError('このデバイスはライト制御をサポートしていません。');
+      }
     };
 
 
@@ -97,47 +124,43 @@ export default {
     };
 
     const flashDetectQRCode = async () => {
-  if (!stream.value) {
-    handleError('カメラが起動していません。');
-    return;
-  }
-
-  const videoTrack = stream.value.getVideoTracks()[0];
-  const capabilities = videoTrack.getCapabilities();
-
-  if ('torch' in capabilities) {
-    try {
-      if (isLightOn.value) {
-        // フラッシュモードが有効な場合のみライトをオン
-        await videoTrack.applyConstraints({
-          advanced: [{ torch: true }] as any,
-        });
-
-        // 1秒間待機（ピント調整時間）
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (!stream.value) {
+        handleError('カメラが起動していません。');
+        return;
       }
 
-      // QRコードを検知
-      await handleDetectQRCode();
+      const videoTrack = stream.value.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
 
-      if (isLightOn.value) {
-        // フラッシュモードが有効な場合ライトをオフ
-        await videoTrack.applyConstraints({
-          advanced: [{ torch: false }] as any,
-        });
+      if ('torch' in capabilities) {
+        try {
+          // 自動フラッシュモード
+          if (lightType.value == 1) {
+            // フラッシュモードが有効な場合のみライトをオン
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: true }] as any,
+            });
+
+            // 2秒間待機（ピント調整時間）
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          }
+
+          // QRコードを検知
+          await handleDetectQRCode();
+
+          if (lightType.value != 2) {
+            // フラッシュモードが有効な場合ライトをオフ
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: false }] as any,
+            });
+          }
+        } catch (err) {
+          handleError('フラッシュ撮影に失敗しました。', err);
+        }
+      } else {
+        handleError('このデバイスはライト制御をサポートしていません。');
       }
-    } catch (err) {
-      handleError('フラッシュ撮影に失敗しました。', err);
-    }
-  } else {
-    handleError('このデバイスはライト制御をサポートしていません。');
-  }
-};
-
-
-
-
-
+    };
 
     const handleError = (message: string, error?: any) => {
       errorMessage.value = message;
@@ -158,8 +181,7 @@ export default {
       errorMessage,
       qrCodeData,
       isCameraActive,
-      isLightOn,
-      toggleLight,
+      changeLightType,
     };
   },
 };
@@ -184,7 +206,7 @@ export default {
 }
 
 .camera-disp {
-  width: 100vh;
+  width: 100%;
   height: 100vh;
   object-fit: cover;
   /* カメラ映像が画面いっぱいに表示されるように調整 */
