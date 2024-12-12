@@ -36,7 +36,10 @@ export default {
 
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: {
+            facingMode: 'environment',
+            advanced: [{ focusMode: 'continuous' }] as any,
+          },
         });
         stream.value = mediaStream;
         videoElement.value.srcObject = mediaStream;
@@ -177,7 +180,7 @@ export default {
       startCamera,
       stopCamera,
       handleDetectQRCode,
-      flashDetectQRCode, // 追加
+      flashDetectQRCode,
       errorMessage,
       qrCodeData,
       isCameraActive,
