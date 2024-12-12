@@ -70,6 +70,9 @@ export default {
 <style scoped>
 .game {
     position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .maps {
@@ -94,7 +97,7 @@ export default {
 
 .under-buttons-area {
     position: absolute;
-    bottom: 110px;
+    bottom: 50px;
     left: 0;
     width: 100%;
     height: 100px;

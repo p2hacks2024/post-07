@@ -191,6 +191,8 @@ export default {
 <style scoped>
 .video-wrapper {
   position: relative;
+  width: 100%;
+  height: 100svh;
 }
 
 .toggle-switch {
@@ -207,7 +209,7 @@ export default {
 
 .camera-disp {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   object-fit: cover;
   /* カメラ映像が画面いっぱいに表示されるように調整 */
   background-color: black;
