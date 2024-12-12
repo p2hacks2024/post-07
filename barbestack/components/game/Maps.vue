@@ -3,12 +3,12 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted } from 'vue';
 
 onMounted(() => {
     if (!window.google || !google.maps) {
-        console.error('Google Maps API is not loaded correctly.')
-        return
+        console.error('Google Maps API is not loaded correctly.');
+        return;
     }
 
     const map = new google.maps.Map(document.getElementById('map'), {
@@ -52,6 +52,6 @@ onMounted(() => {
         logoControl: false, // 左下のGoogleロゴを無効にする
         scaleControl: false, // 右下のスケール表示を無効にする
         clickableIcons: false, // マーカーのクリックを無効にする
-    })
+    });
 });
 </script>
