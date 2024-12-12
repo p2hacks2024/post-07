@@ -1,6 +1,6 @@
 <template>
   <div class="kill-log-message">
-    {{ killer }} は {{ victim }} を倒した
+    {{ killer }} が {{ victim }} を倒した
   </div>
 </template>
 
@@ -24,11 +24,12 @@ export default defineComponent({
 
 <style scoped>
 .kill-log-message {
-  background-color: rgba(0, 0, 0, 0.7);
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: white;
-  padding: 5px 10px;
-  margin: 5px 0;
-  border-radius: 5px;
+  border-radius: 5px 3px;
   font-size: 14px;
 }
 </style>

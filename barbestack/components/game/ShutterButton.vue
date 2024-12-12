@@ -32,7 +32,6 @@ export default {
     -webkit-tap-highlight-color: transparent;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease, transform 0.2s ease;
-    z-index: 10;
 }
 
 .shutter-button::before {
@@ -43,7 +42,6 @@ export default {
     border: 2px solid #000;
     border-radius: 50%;
     background-color: #fff;
-    z-index: 11;
 }
 
 .shutter-button:hover {

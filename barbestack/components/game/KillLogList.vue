@@ -1,73 +1,55 @@
 <template>
   <div class="kill-log-list">
-    <KillLogMessage
-      v-for="(log, index) in killLogs"
-      :key="index"
-      :killer="log.killer"
-      :victim="log.victim"
-    />
+    <KillLogMessage v-for="(killLog, index) in killLogs" :key="index" :killer="killLog.killer"
+      :victim="killLog.victim" />
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
-import KillLogMessage from '~/components/atoms/KillLogMessage.vue';
+<script setup lang="ts">
+import { defineExpose, onMounted, ref } from 'vue';
 
 interface KillLog {
   killer: string;
   victim: string;
 }
 
-export default defineComponent({
-  name: 'KillLogList',
-  components: {
-    KillLogMessage,
-  },
-  setup() {
-    const killLogs = ref<KillLog[]>([]);
-    const maxLogCount = 5;
+const killLogs = ref<KillLog[]>([]);
+const maxLogCount = 5;
 
-    const addKillLog = (killer: string, victim: string) => {
-      const newLog: KillLog = { killer, victim };
-      killLogs.value.push(newLog);
-      if (killLogs.value.length > maxLogCount) {
-        killLogs.value.shift();
-      }
-    };
+const addKillLog = (killer: string, victim: string) => {
+  const newLog: KillLog = { killer, victim };
+  killLogs.value.push(newLog);
+  if (killLogs.value.length > maxLogCount) {
+    killLogs.value.shift();
+  }
+};
 
-    // キルログを削除するタイマー
-    const removeOldLogs = () => {
-      setInterval(() => {
-        if (killLogs.value.length > 0) {
-          killLogs.value.shift();
-        }
-      }, 5000); // 5秒ごとに古いログを削除
-    };
+const removeOldLogs = () => {
+  setInterval(() => {
+    if (killLogs.value.length > 0) {
+      killLogs.value.shift();
+    }
+  }, 5000);
+};
 
-    onMounted(() => {
-      removeOldLogs(); // コンポーネントがマウントされた時にタイマーを開始
-    });
-
-    onUnmounted(() => {
-      // タイマーのクリーンアップ（不要な場合は省略可）
-    });
-
-    return {
-      killLogs,
-      addKillLog,
-    };
-  },
+onMounted(() => {
+  removeOldLogs();
 });
+
+defineExpose({
+  addKillLog,
+});
+
 </script>
 
 <style scoped>
 .kill-log-list {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  max-width: 250px;
-  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 10px;
 }
 </style>
