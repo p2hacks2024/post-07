@@ -24,3 +24,10 @@ onMounted(() => {
         <vue-qrcode v-if="generateText" :value="generateText" tag="img"></vue-qrcode>
     </div>
 </template>
+
+<style scoped>
+img {
+    width: 100%;
+    height: 100%;
+}
+</style>
