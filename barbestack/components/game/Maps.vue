@@ -144,6 +144,53 @@ const changeViewMode = () => {
             clickableIcons: false,
         });
 
+        // 外側の薄い青丸と内側の濃い青丸を管理するオブジェクト
+        let outerCircle;
+        let innerCircle;
+
+        // 現在地をリアルタイムで更新する
+        if (navigator.geolocation) {
+            const watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const currentLocation = { lat: latitude, lng: longitude };
+
+                    // 外側の薄い青丸が存在しない場合は新規作成
+                    if (!outerCircle) {
+                        outerCircle = new google.maps.Circle({
+                            strokeColor: "#4285F4", // 青色
+                            strokeOpacity: 0.6,
+                            strokeWeight: 2,
+                            fillColor: "#4285F4",
+                            fillOpacity: 0.2,
+                            map: map,
+                            center: currentLocation,
+                            radius: 10, // 半径 20m
+                        });
+                    } else {
+                        // 外側の薄い青丸の位置を更新
+                        outerCircle.setCenter(currentLocation);
+                    }
+
+                    // 内側の濃い青丸が存在しない場合は新規作成
+                    if (!innerCircle) {
+                        innerCircle = new google.maps.Circle({
+                            strokeColor: "#0057D8", // 濃い青色
+                            strokeOpacity: 1,
+                            strokeWeight: 0,
+                            fillColor: "#0057D8",
+                            fillOpacity: 1,
+                            map: map,
+                            center: currentLocation,
+                            radius: 5, // 半径 5m
+                        });
+                    } else {
+                        // 内側の濃い青丸の位置を更新
+                        innerCircle.setCenter(currentLocation);
+                    }
+                });
+        }
+
         for (const _location of locations) {
             new google.maps.Circle({
                 strokeColor: "#FF0000", // 赤色
@@ -180,6 +227,52 @@ const changeViewMode = () => {
             scaleControl: false,
             clickableIcons: false,
         });
+
+        // 外側の薄い青丸と内側の濃い青丸を管理するオブジェクト
+        let outerCircle;
+        let innerCircle;
+
+        if (navigator.geolocation) {
+            const watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const currentLocation = { lat: latitude, lng: longitude };
+
+                    // 外側の薄い青丸が存在しない場合は新規作成
+                    if (!outerCircle) {
+                        outerCircle = new google.maps.Circle({
+                            strokeColor: "#4285F4", // 青色
+                            strokeOpacity: 0.6,
+                            strokeWeight: 2,
+                            fillColor: "#4285F4",
+                            fillOpacity: 0.2,
+                            map: map,
+                            center: currentLocation,
+                            radius: 10, // 半径 20m
+                        });
+                    } else {
+                        // 外側の薄い青丸の位置を更新
+                        outerCircle.setCenter(currentLocation);
+                    }
+
+                    // 内側の濃い青丸が存在しない場合は新規作成
+                    if (!innerCircle) {
+                        innerCircle = new google.maps.Circle({
+                            strokeColor: "#0057D8", // 濃い青色
+                            strokeOpacity: 1,
+                            strokeWeight: 0,
+                            fillColor: "#0057D8",
+                            fillOpacity: 1,
+                            map: map,
+                            center: currentLocation,
+                            radius: 5, // 半径 5m
+                        });
+                    } else {
+                        // 内側の濃い青丸の位置を更新
+                        innerCircle.setCenter(currentLocation);
+                    }
+                });
+        }
 
         for (const _location of locations) {
             new google.maps.Circle({
