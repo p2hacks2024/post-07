@@ -38,7 +38,11 @@ import { useRoute } from 'vue-router';
 import axios from "axios";
 
 const roomId = ref("");
-const players = ref([]);
+interface Player {
+    name: string;
+    id: number;
+}
+const players = ref<Player[]>([]);
 
 const url = useRuntimeConfig().public.flaskApiUrl;
 
