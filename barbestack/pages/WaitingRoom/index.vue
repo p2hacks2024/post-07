@@ -26,6 +26,8 @@
                         </tr>
                     </tbody>
                 </table>
+                <button class="exit-game-button" @click="exitWaitingRoom">退室</button>
+                <button class="exit-game-button" @click="exitWaitingRoom" v-show="isHost">ゲーム開始</button>
             </div>
         </BodyField>
     </div>
@@ -34,7 +36,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 // urlのqueryを取得
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from "axios";
 
 const roomId = ref("");
@@ -43,13 +45,18 @@ interface Player {
     id: number;
 }
 const players = ref<Player[]>([]);
+const playerId = ref(0);
+const isHost = ref(false);
 
 const url = useRuntimeConfig().public.flaskApiUrl;
+const route = useRoute();
+const router = useRouter();
 
 onMounted(async () => {
-    const route = useRoute();
     const query = route.query;
     roomId.value = query.room_id as string;
+    playerId.value = Number(query.player_id) as number;
+    isHost.value = query.is_host === "1";
     console.log(query.room_id);
 
     try {
@@ -68,8 +75,32 @@ onMounted(async () => {
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
         alert("エラー：" + errorMessage);
     }
-
 })
+
+const exitWaitingRoom = async () => {
+    console.log("exitWaitingRoom");
+
+    try {
+        const response = await axios.delete(
+            `${url}/rooms/${roomId.value}/players/${playerId.value}`
+        );
+
+        if (response.status === 200) {
+            console.log(response);
+            router.push({
+                path: "/"
+            });
+        }
+        else {
+            alert("退室に失敗しました");
+            return;
+        }
+    } catch (error: any) {
+        console.error("エラー:", error);
+        const errorMessage = error.response?.data?.message || "リクエスト失敗";
+        alert("エラー：" + errorMessage);
+    }
+}
 </script>
 
 <style scoped>

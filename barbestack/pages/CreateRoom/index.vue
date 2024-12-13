@@ -71,7 +71,8 @@ const createRoom = async () => {
                 name: "WaitingRoom",
                 query: {
                     room_id: roomId.value,
-                    player_name: playerName.value.trim()
+                    player_name: playerName.value.trim(),
+                    is_host: 1
                 }
             });
         }
