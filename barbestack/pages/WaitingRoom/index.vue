@@ -20,7 +20,7 @@
                                 {{ player.name }}
                             </td>
                             <td>
-                                <QRCodeGenerator :msg="'barbestack/' + player" class="qr-code" />
+                                <QRCodeGenerator :msg="'barbestack/' + player.id" class="qr-code" />
                             </td>
                             <td>
                                 <button>PDF出力</button>
