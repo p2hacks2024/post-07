@@ -64,6 +64,11 @@ const createRoom = async () => {
                 `${url}/rooms/${roomId.value}/players?player_name=${encodeURIComponent(playerName.value.trim())}`
             );
 
+            if (response_player.status !== 200) {
+                alert("入室に失敗しました");
+                return;
+            }
+
             console.log(response_player);
 
             // ページ遷移
@@ -71,8 +76,8 @@ const createRoom = async () => {
                 name: "WaitingRoom",
                 query: {
                     room_id: roomId.value,
-                    player_name: playerName.value.trim(),
-                    is_host: 1
+                    player_id: response_player.data.player_id,
+                    is_host: 1,
                 }
             });
         }

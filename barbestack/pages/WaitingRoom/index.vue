@@ -7,7 +7,7 @@
                 <div>部屋番号</div>：<div>{{ roomId }}</div>
             </div>
             <div class="player-wrapper">
-                <div class="">参加プレイヤー</div>
+                <div>参加プレイヤー</div>
                 <table>
                     <tbody>
                         <tr>
@@ -16,7 +16,9 @@
                             <th class="qr-code-print">Print</th>
                         </tr>
                         <tr v-for="player in players">
-                            <td>{{ player.name }}</td>
+                            <td :class="player.id == playerId ? 'me-player' : ''">
+                                {{ player.name }}
+                            </td>
                             <td>
                                 <QRCodeGenerator :msg="'barbestack/' + player" class="qr-code" />
                             </td>
@@ -75,7 +77,7 @@ onMounted(async () => {
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
         alert("エラー：" + errorMessage);
     }
-})
+});
 
 const exitWaitingRoom = async () => {
     console.log("exitWaitingRoom");
@@ -154,5 +156,21 @@ th {
     width: 160px;
     text-align: center;
     border: 1px solid black;
+}
+
+.exit-game-button {
+    width: 100px;
+    height: 35px;
+    margin-top: 25px;
+    margin-left: 5px;
+    background-color: #E0E0E0;
+    border: solid 1px #CACACA;
+    color: black;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.me-player {
+    text-decoration: underline;
 }
 </style>
