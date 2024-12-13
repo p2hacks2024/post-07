@@ -6,14 +6,15 @@
     padding: 0;
     font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", "sans-serif";
     font-size: 18px;
+    --darkText: #303030;
+    --lightText: #EFEFEF;
+    color: var(--darkText);
+}
+
+body {
+    background-color: #F3F3F3;
 }
 
 main {
     min-height: calc(100vh - 90px);
-    margin: 0;
-    padding: 0;
-    background-color: #FAFAFA;
-    --darkText: #303030;
-    --lightText: #EFEFEF;
-    color: var(--darkText);
 }
