@@ -24,20 +24,18 @@
                 </div>
             </div>
         </div>
-
-        <div class="debug-buttons">
-            <div>
-                <button @click="startCamera">カメラを起動</button>
-                <button @click="stopCamera" :disabled="!(isCameraActive)">カメラを停止</button>
-            </div>
-            <p v-if="scannedCode">スキャンしたQRコード: {{ scannedCode }}</p>
-            <button @click="addKillLog('aaaaaaaaaaaaa', 'bbbbbbbbbbbbb')">add killlog</button>
-        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { io } from "socket.io-client";
+import axios from "axios";
+
+const url = useRuntimeConfig().public.flaskApiUrl;
+
+const route = useRoute();
+const router = useRouter();
 
 const scannedCode = ref<string | null>(null);
 const camera = ref<any>(null); // Camera コンポーネントへの参照
@@ -47,6 +45,72 @@ const isView = ref(true);
 const flashPatterns = ['flash-off', 'flash-auto', 'flash-on'];
 const flashPatternNum = ref(0);
 const flashPattern = ref("");
+const roomId = ref("");
+const playerId = ref(0);
+
+let killCount = 0;
+
+interface Player {
+    name: string;
+    player_id: number;
+}
+const players = ref<Player[]>([]);
+
+const socket = ref(io(useRuntimeConfig().public.webSocketApiUrl));
+
+onMounted(async () => {
+    const query = route.query;
+    roomId.value = query.room_id as string;
+    playerId.value = Number(query.player_id) as number;
+
+    socket.value.emit("join", { room: roomId.value });
+
+    startCamera();
+
+    try {
+        const response = await axios.get(
+            `${url}/rooms/${roomId.value}/players`
+        );
+
+        if (response.status === 200) {
+            console.log(response);
+            players.value = response.data.players;
+        }
+    } catch (error: any) {
+        console.error("エラー:", error);
+        const errorMessage = error.response?.data?.message || "リクエスト失敗";
+        alert("エラー：" + errorMessage);
+    }
+
+    socket.value.on("kill_event", (data: any) => {
+        console.log("kill_event:", data);
+        // plyaers.value内のplayer_idとdata.killerが一致する要素を取得
+        const killerName = String(players.value.find(player => Number(player.player_id) === Number(data.killer))?.name);
+        // plyaers.value内のplayer_idとdata.victimが一致する要素を取得
+        const victimName = String(players.value.find(player => Number(player.player_id) === Number(data.victim))?.name);
+        console.log(killerName, victimName);
+        addKillLog(killerName, victimName);
+
+        if (Number(data.victim) === Number(playerId.value)) {
+            gameOver(0);
+        }
+    });
+});
+
+const gameOver = (isWinner: number) => {
+    router.push({
+        name: "Result",
+        query: {
+            room_id: roomId.value,
+            is_winner: isWinner,
+            kill_count: killCount
+        }
+    });
+};
+
+onUnmounted(() => {
+    stopCamera();
+});
 
 const startCamera = () => {
     if (camera.value) {
@@ -64,14 +128,6 @@ const stopCamera = () => {
     }
 };
 
-const isCameraActive = (): boolean => {
-    if (camera.value) {
-        return camera.value?.getIsCameraActive;
-    } else {
-        return false;
-    }
-};
-
 const handleQRCode = (code: string) => {
     scannedCode.value = code; // QRコードの内容を保存
 };
@@ -81,6 +137,39 @@ const triggerCameraScan = async () => {
         const qrCodeValue = await camera.value.shutterDetectQRCode()
 
         scannedCode.value = qrCodeValue ? qrCodeValue : null;
+        if (scannedCode.value) {
+            for (const qrcode of scannedCode.value) {
+                // 正規表現で数字部分を抽出
+                const number = qrcode.match(/\/(\d+)$/);
+
+                if (number) {
+                    const numberPart = number[1]; // 数字部分はキャプチャグループに格納される
+
+                    try {
+                        const response = await axios.put(
+                            `${url}/rooms/${roomId.value}/players/${numberPart}/kill?killed_id=${encodeURIComponent(Number(playerId.value))}&victim_id=${encodeURIComponent(Number(numberPart))}`
+                        );
+
+                        if (response.status === 200) {
+                            // alert(response?.data?.alive_players);
+                            console.log(response?.data?.alive_players);
+                            killCount++;
+                            if (response?.data?.alive_players <= 1) {
+                                gameOver(1);
+                            }
+                        }
+                    } catch (error: any) {
+                        console.error("エラー:", error);
+                        const errorMessage = error.response?.data?.message || "リクエスト失敗";
+                        alert("エラー：" + errorMessage);
+                    }
+
+                    socket.value.emit("kill_event", { room: roomId.value, killer: playerId.value, victim: numberPart });
+                } else {
+                    console.log("数字が見つかりませんでした");
+                }
+            }
+        }
 
     } else {
         console.error("Camera ref is not set.");
@@ -119,6 +208,32 @@ const changeMapMode = () => {
     }
 };
 
+const exitWaitingRoom = async () => {
+    console.log("exitWaitingRoom");
+
+    try {
+        const response = await axios.delete(
+            `${url}/rooms/${roomId.value}/players/${playerId.value}`
+        );
+
+        if (response.status === 200) {
+            console.log(response);
+            router.push({
+                path: "/"
+            });
+        }
+        else {
+            alert("退室に失敗しました");
+            return;
+        }
+    } catch (error: any) {
+        console.error("エラー:", error);
+        // const errorMessage = error.response?.data?.message || "リクエスト失敗";
+        // alert("エラー：" + errorMessage);
+    }
+
+    socket.value.disconnect();
+}
 </script>
 
 <style scoped>

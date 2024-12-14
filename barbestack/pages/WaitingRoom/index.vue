@@ -29,7 +29,8 @@
                     </tbody>
                 </table>
                 <SpinerLodingButton ref="exitWaitingRoomButton" @click="exitWaitingRoom">退室</SpinerLodingButton>
-                <SpinerLodingButton ref="startButton" @click="gameStartButton" v-show="isHost">ゲーム開始</SpinerLodingButton>
+                <SpinerLodingButton ref="startButton" @click="gameStartButton" v-show="isHost">ゲーム開始
+                </SpinerLodingButton>
             </div>
         </BodyField>
     </div>
@@ -47,7 +48,7 @@ const url = useRuntimeConfig().public.flaskApiUrl;
 const route = useRoute();
 const router = useRouter();
 
-const socket = ref(io("wss://gmktec-tailscale:5000"));
+const socket = ref(io(useRuntimeConfig().public.webSocketApiUrl));
 
 const exitWaitingRoomButton = ref<any>(null); // ボタンコンポーネントへの参照
 const startButton = ref<any>(null); // ボタンコンポーネントへの参照
@@ -60,8 +61,7 @@ interface Player {
 const players = ref<Player[]>([]);
 const playerId = ref(0);
 const isHost = ref(false);
-
-let isExit = true;
+const isExit = ref(true);
 
 onMounted(async () => {
     const query = route.query;
@@ -76,7 +76,7 @@ onMounted(async () => {
 
     // サーバーからの応答を受け取る
     socket.value.on("start_event", (data: any) => {
-        isExit = false;
+        isExit.value = false;
         console.log("ゲーム開始イベントを受信:", data);
         // ページ遷移
         router.push({
@@ -91,8 +91,6 @@ onMounted(async () => {
     socket.value.on("diff_player", async (data: any) => {
         console.log("プレーヤー数変更:", data);
         try {
-            const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
-
             const response = await axios.get(
                 `${url}/rooms/${roomId.value}/players`
             );
@@ -109,8 +107,6 @@ onMounted(async () => {
     });
 
     try {
-        const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
-
         const response = await axios.get(
             `${url}/rooms/${roomId.value}/players`
         );
@@ -127,7 +123,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    if (isExit) {
+    if (isExit.value) {
         exitWaitingRoom();
     }
 });
@@ -170,7 +166,13 @@ const exitWaitingRoom = async () => {
 const gameStartButton = () => {
     startButton.value?.chnageLoading(true);
     console.log("gameStartButton");
-    socket.value.emit("start_event", { room: roomId.value });
+
+    if (players.value.length <= 1) {
+        alert("プレイヤーが2人以上いる必要があります");
+    }
+    else {
+        socket.value.emit("start_event", { room: roomId.value });
+    }
     startButton.value?.chnageLoading(false);
 }
 </script>
