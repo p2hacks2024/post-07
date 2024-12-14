@@ -20,7 +20,7 @@
                                 {{ player.name }}
                             </td>
                             <td>
-                                <QRCodeGenerator :msg="'barbestack/' + player.id" class="qr-code" />
+                                <QRCodeGenerator :msg="'barbestack/' + player.player_id" class="qr-code" />
                             </td>
                             <td>
                                 <button>PDF出力</button>
@@ -52,7 +52,7 @@ const socket = ref(io("wss://gmktec-tailscale:5000"));
 const roomId = ref("");
 interface Player {
     name: string;
-    id: number;
+    player_id: number;
 }
 const players = ref<Player[]>([]);
 const playerId = ref(0);
