@@ -117,7 +117,7 @@ onMounted(async () => {
                         return { lat: player.lat, lng: player.lng };
                     });
 
-                    playersLocation.push({ lat: 41.84162548819161, lng: 140.76630721848127 });
+                    // playersLocation.push({ lat: 41.84162548819161, lng: 140.76630721848127 });
 
                     // プレイヤーの位置情報を地図にプロット
                     maps.value?.plotLocations(playersLocation);
