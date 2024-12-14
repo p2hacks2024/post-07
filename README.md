@@ -43,7 +43,7 @@ Cloudflare Pagesを利用し、GitHubへpushすることで自動でビルド＆
 また、mainブランチ以外でもpushするごとにプレビューのビルド＆デプロイが行われ、githubからプレビュー用のURLを確認し、チームメンバーの誰でも手軽に実環境での動作確認を行えるようにした。<br />
 
 ### バックエンド開発
-Vercelでもフロントエンド開発同様、自動ビルド＆デプロイが行われるようにし、開発の効率化を行った。<br />
+Vercel, Renderでもフロントエンド開発同様、自動ビルド＆デプロイが行われるようにし、開発の効率化を行った。<br />
 
 ### タスク管理・チーム開発
 タスク管理はGithubのIssueから行うようにし、さらに、Issueからブランチを発行することでIssueとブランチの紐づけを容易にした。
@@ -72,6 +72,7 @@ Vercelでもフロントエンド開発同様、自動ビルド＆デプロイ�
 #### その他開発に使用したツール・サービス
 - Cloudflare Pages
 - Vercel
+- Render
 - Firestore
 - Google Maps API
 - Geolocation API
