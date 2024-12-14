@@ -28,6 +28,17 @@ export default defineNuxtConfig({
             "敵のQRコードを撮影し生き残れ！単位をかけたバトルロイヤルだ！",
         },
       ],
+      link: [
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css?family=Inter",
+        },
+        {
+          rel: "icon",
+          type: "image/x-icon",
+          href: "mini-logo.png",
+        },
+      ],
     },
   },
   css: [
