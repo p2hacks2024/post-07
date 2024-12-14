@@ -6,28 +6,26 @@
     </div>
 </template>
 
-<!-- <script setup="ts">
-import { onMounted, onUnmounted } from 'vue';
-import { io } from "socket.io-client";
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import axios from "axios";
 
-const socket = ref(io("wss://gmktec-tailscale:5000"));
+const url = useRuntimeConfig().public.webSocketApiUrl;
 
-onMounted(() => {
-    // send a message to the server
-    socket.value.emit("method1", { data: "hello" });
-    // receive a message from the server
-    socket.value.on("receive_message", (...args) => {
-        // ...
-        console.log(args);
-    });
+onMounted(async () => {
+    try {
+        const response = await axios.get(
+            `${url}/hello`
+        );
+
+        if (response.status === 200) {
+            console.log(response);
+        }
+    } catch (error: any) {
+        console.error("エラー:", error);
+        // alert("エラー：" + errorMessage);
+    }
 });
-
-onUnmounted(() => {
-    // ...
-    socket.value.emit("leave", { data: { room: 1 } });
-    socket.value.emit("leave", { data: { room: 2 } });
-    socket.value.close();
-});
-</script> -->
+</script>
 
 <style></style>
