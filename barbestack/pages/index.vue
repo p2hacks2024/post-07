@@ -3,6 +3,7 @@
         <Header />
         <!-- BodyFieldセクション -->
         <BodyField title="QR行動">
+            <div class="all-text">すべて</div>
             <div class="column">
                 <div class="card">
                     <span class="circle-icon">バ</span>
@@ -59,6 +60,13 @@
     width: 100%;
 }
 
+.all-text {
+    font-size: 16px;
+    color: black;
+    margin: 30px 0;
+    padding-left: 15px;
+}
+
 .data {
     color: #999;
     font-size: 15px;
@@ -70,6 +78,7 @@
 }
 
 .section::before {
+    z-index: 0;
     position: absolute;
     top: -8px;
     left: 0;
@@ -92,7 +101,7 @@
     /* border-radius: 8px; */
     /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); */
     border-bottom: 1px solid #DCDCDC;
-    padding: 15px;
+    padding: 15px 0;
 }
 
 .circle-icon {
@@ -122,7 +131,7 @@
 .link {
     text-align: right;
     color: gray;
-    text-decoration: none;
+    text-decoration: underline;
     font-size: 14px;
 }
 

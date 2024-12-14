@@ -102,7 +102,7 @@ onMounted(async () => {
         } catch (error: any) {
             console.error("エラー:", error);
             const errorMessage = error.response?.data?.message || "リクエスト失敗";
-            alert("エラー：" + errorMessage);
+            // alert("エラー：" + errorMessage);
         }
     });
 
@@ -118,7 +118,7 @@ onMounted(async () => {
     } catch (error: any) {
         console.error("エラー:", error);
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
-        alert("エラー：" + errorMessage);
+        // alert("エラー：" + errorMessage);
     }
 });
 

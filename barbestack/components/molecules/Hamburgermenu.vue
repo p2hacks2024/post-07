@@ -25,8 +25,8 @@ const isClick = ref(false);
 <style scoped>
 .button {
     display: inline-block;
-    width: 40px;
-    height: 40px;
+    width: 25px;
+    height: 25px;
     border-radius: 10px;
     z-index: 5;
 }
@@ -37,11 +37,11 @@ const isClick = ref(false);
 
 .button>.bar {
     content: '';
-    width: 30px;
+    width: 15px;
     height: 2px;
     border-radius: 5px;
     background-color: #000;
-    margin: 6.4px auto;
+    margin: 3px auto;
     position: relative;
     top: 5.5px;
     transition: 0.3s ease-in-out;
@@ -49,11 +49,11 @@ const isClick = ref(false);
 
 .button>.dammy-bar {
     content: '';
-    width: 30px;
+    width: 15px;
     height: 2px;
     border-radius: 5px;
     background-color: #000;
-    margin: 6.4px auto;
+    margin: 3px auto;
     position: relative;
     top: 5.5px;
     opacity: 0;
@@ -63,11 +63,11 @@ const isClick = ref(false);
 
 .button>.bar2 {
     content: '';
-    width: 30px;
+    width: 15px;
     height: 2px;
     border-radius: 5px;
     background-color: #000;
-    margin: 6.4px auto;
+    margin: 3px auto;
     position: relative;
     top: 5.5px;
     transition: 0.4s ease-in-out;
@@ -88,11 +88,11 @@ const isClick = ref(false);
 }
 
 .cross-button>.bar:nth-child(1) {
-    transform: rotateZ(45deg) translateX(7px) translateY(5px);
+    transform: rotateZ(45deg) translateX(2px) translateY(5px);
 }
 
 .cross-button>.bar:nth-child(3) {
-    transform: rotateZ(-45deg) translateX(7px) translateY(-5px);
+    transform: rotateZ(-45deg) translateX(2px) translateY(-5px);
 }
 
 .menu-close {
@@ -131,6 +131,7 @@ const isClick = ref(false);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    z-index: 5;
 }
 
 @keyframes menu-str-open {
