@@ -5,7 +5,8 @@ post-07 バーベスタック
 ### プロダクト名
 **QR行動**
 
-![image](https://github.com/user-attachments/assets/82901cfa-d16c-40d8-93cb-547303c54acb)
+![image](https://github.com/user-attachments/assets/4bee3724-b6c5-42c3-bb15-f0f5815ac4a2)
+
 
 成果物のURL：https://qrkodo.kcat.dev
 
@@ -40,7 +41,7 @@ QRコードを撮影されたプレイヤーは撃破となる。最後まで生
 - 金子康一/kCat：フロントエンド
 - 大久匠士/くろ：フロントエンド
 - 稲垣颯：バックエンド
-- 長山 明日香/しろ：デザイン
+- 長山明日香/しろ：デザイン
 
 ## 開発で工夫した点  
 ### フロントエンド開発
@@ -87,5 +88,5 @@ Vercel, Renderでもフロントエンド開発同様、自動ビルド＆デプ
 - Git
 - Github
 - Discord
-- Webhook
+  - Webhook
 - Visual Studio Code
