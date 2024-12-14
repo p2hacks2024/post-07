@@ -94,7 +94,7 @@ const createRoom = async () => {
 <style scoped>
 ul {
     margin-top: 10px;
-    margin-left: 20px;
+    margin-left: 25px;
     line-height: 30px;
 }
 

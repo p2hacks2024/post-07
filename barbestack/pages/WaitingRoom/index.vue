@@ -28,18 +28,25 @@
                         </tr>
                     </tbody>
                 </table>
-                <button class="exit-game-button" @click="exitWaitingRoom">退室</button>
-                <button class="exit-game-button" @click="exitWaitingRoom" v-show="isHost">ゲーム開始</button>
+                <button class="game-button" @click="exitWaitingRoom">退室</button>
+                <button class="game-button" @click="gameStartButton" v-show="isHost">ゲーム開始</button>
             </div>
         </BodyField>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
+import { io } from "socket.io-client";
 // urlのqueryを取得
 import { useRoute, useRouter } from 'vue-router';
 import axios from "axios";
+
+const url = useRuntimeConfig().public.flaskApiUrl;
+const route = useRoute();
+const router = useRouter();
+
+const socket = ref(io("wss://gmktec-tailscale:5000"));
 
 const roomId = ref("");
 interface Player {
@@ -49,17 +56,54 @@ interface Player {
 const players = ref<Player[]>([]);
 const playerId = ref(0);
 const isHost = ref(false);
+const isLoading = ref(false); // ロード中フラグ
 
-const url = useRuntimeConfig().public.flaskApiUrl;
-const route = useRoute();
-const router = useRouter();
+let isExit = true;
 
 onMounted(async () => {
     const query = route.query;
     roomId.value = query.room_id as string;
     playerId.value = Number(query.player_id) as number;
-    isHost.value = query.is_host === "1";
+    isHost.value = (query.is_host === "1");
     console.log(query.room_id);
+
+    // 部屋に参加
+    socket.value.emit("join", { room: roomId.value });
+    socket.value.emit("diff_player", { room: roomId.value });
+
+    // サーバーからの応答を受け取る
+    socket.value.on("start_event", (data: any) => {
+        isExit = false;
+        console.log("ゲーム開始イベントを受信:", data);
+        // ページ遷移
+        router.push({
+            name: "Game",
+            query: {
+                room_id: roomId.value,
+                player_id: playerId.value,
+            }
+        });
+    });
+
+    socket.value.on("diff_player", async (data: any) => {
+        console.log("プレーヤー数変更:", data);
+        try {
+            const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
+
+            const response = await axios.get(
+                `${url}/rooms/${roomId.value}/players`
+            );
+
+            if (response.status === 200) {
+                console.log(response);
+                players.value = response.data.players;
+            }
+        } catch (error: any) {
+            console.error("エラー:", error);
+            const errorMessage = error.response?.data?.message || "リクエスト失敗";
+            alert("エラー：" + errorMessage);
+        }
+    });
 
     try {
         const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
@@ -76,6 +120,12 @@ onMounted(async () => {
         console.error("エラー:", error);
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
         alert("エラー：" + errorMessage);
+    }
+});
+
+onUnmounted(() => {
+    if (isExit) {
+        exitWaitingRoom();
     }
 });
 
@@ -102,6 +152,18 @@ const exitWaitingRoom = async () => {
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
         alert("エラー：" + errorMessage);
     }
+
+    socket.value.emit("diff_player", { room: roomId.value });
+    socket.value.emit("leave", { room: roomId.value });
+    // ソケットをクリーンアップ
+    socket.value.off("start_event");
+    socket.value.off("diff_player");
+    socket.value.disconnect();
+}
+
+const gameStartButton = () => {
+    console.log("gameStartButton");
+    socket.value.emit("start_event", { room: roomId.value });
 }
 </script>
 
@@ -158,7 +220,7 @@ th {
     border: 1px solid black;
 }
 
-.exit-game-button {
+.game-button {
     width: 100px;
     height: 35px;
     margin-top: 25px;
@@ -172,5 +234,26 @@ th {
 
 .me-player {
     text-decoration: underline;
+}
+
+/* スピナーのスタイル */
+.spinner {
+    width: 35px;
+    height: 35px;
+    margin-top: 25px;
+    border: 4px solid #E0E0E0;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>
