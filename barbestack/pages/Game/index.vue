@@ -82,6 +82,54 @@ onMounted(async () => {
         alert("エラー：" + errorMessage);
     }
 
+    // 180秒に1回位置情報を送信
+    setInterval(() => {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            try {
+                const response = await axios.put(
+                    `${url}/rooms/${roomId.value}/players/${playerId.value}?lat=${encodeURIComponent(Number(lat))}&lng=${encodeURIComponent(Number(lng))}&spec=0`,
+                );
+
+                if (response.status === 200) {
+                    console.log(response);
+                    players.value = response.data.players;
+                }
+            } catch (error: any) {
+                console.error("エラー:", error);
+                const errorMessage = error.response?.data?.message || "リクエスト失敗";
+                alert("エラー：" + errorMessage);
+            }
+        });
+        setTimeout(async () => {
+            try {
+                const response = await axios.get(
+                    `${url}/rooms/${roomId.value}/players`
+                );
+
+                if (response.status === 200) {
+                    console.log(response);
+                    players.value = response.data.players;
+
+                    const playersLocation = response.data.players.map((player: any) => {
+                        return { lat: player.lat, lng: player.lng };
+                    });
+
+                    // playersLocation.push({ lat: 41.84162548819161, lng: 140.76630721848127 });
+
+                    // プレイヤーの位置情報を地図にプロット
+                    maps.value?.plotLocations(playersLocation);
+                }
+            } catch (error: any) {
+                console.error("エラー:", error);
+                const errorMessage = error.response?.data?.message || "リクエスト失敗";
+                alert("エラー：" + errorMessage);
+            }
+        }, 20000);
+    }, 180000);
+
     socket.value.on("kill_event", (data: any) => {
         console.log("kill_event:", data);
         // plyaers.value内のplayer_idとdata.killerが一致する要素を取得
@@ -97,7 +145,23 @@ onMounted(async () => {
     });
 });
 
-const gameOver = (isWinner: number) => {
+const gameOver = async (isWinner: number) => {
+    try {
+        const response = await axios.delete(
+            `${url}/rooms/${roomId.value}/players/${playerId.value}`
+        );
+
+        if (response.status !== 200) {
+            console.log(response);
+            alert("ゲームオーバーに失敗しました");
+            return;
+        }
+    } catch (error: any) {
+        console.error("エラー:", error);
+        const errorMessage = error.response?.data?.message || "リクエスト失敗";
+        alert("エラー：" + errorMessage);
+    }
+
     router.push({
         name: "Result",
         query: {
@@ -197,7 +261,7 @@ const addKillLog = (killer: string, victim: string) => {
     } else {
         console.error("killLogRef is not set.");
     }
-    maps.value?.plotLocations([{ lat: 41.84162548819161, lng: 140.76630721848127 }]);
+    // maps.value?.plotLocations([{ lat: 41.84162548819161, lng: 140.76630721848127 }]);
 };
 
 const changeMapMode = () => {
