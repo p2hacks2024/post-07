@@ -19,9 +19,7 @@
                     <input type="text" size="6" v-model="roomId" placeholder="部屋番号を入力してください" />
                 </div>
                 <div>
-                    <!-- ロード中でない場合はボタン、ロード中はスピナー -->
-                    <button v-if="!isLoading" @click="joinRoom" class="next-button">参加</button>
-                    <div v-else class="spinner"></div>
+                    <SpinerLodingButton ref="joinButton" @click="joinRoom">参加</SpinerLodingButton>
                 </div>
             </div>
         </BodyField>
@@ -35,27 +33,27 @@ import axios from "axios";
 
 const router = useRouter();
 
+const joinButton = ref<any>(null); // ボタンコンポーネントへの参照
 // データの定義
 const roomId = ref<string>(""); // 部屋番号の入力をバインド
 const playerName = ref<string>(""); // ユーザー名の入力をバインド
 const errorMessage = ref<string | null>(null);
-const isLoading = ref(false); // ロード中フラグ
 
 // 部屋作成関数
 const joinRoom = async () => {
-    isLoading.value = true; // ロード中に設定
+    joinButton.value?.chnageLoading(true);
     try {
         const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
 
         if (!playerName.value.trim()) {
             alert("ユーザー名を入力してください");
-            isLoading.value = false;
+            joinButton.value?.chnageLoading(false);
             return;
         }
 
-        if(!roomId.value.trim()) {
+        if (!roomId.value.trim()) {
             alert("部屋番号を入力してください");
-            isLoading.value = false;
+            joinButton.value?.chnageLoading(false);
             return;
         }
 
@@ -73,7 +71,7 @@ const joinRoom = async () => {
                 `${url}/rooms/${roomId.value.trim()}/players?player_name=${encodeURIComponent(playerName.value.trim())}`
             );
 
-            if(response_player.status !== 200) {
+            if (response_player.status !== 200) {
                 alert("入室に失敗しました");
                 return;
             }
@@ -95,10 +93,16 @@ const joinRoom = async () => {
         }
     } catch (error: any) {
         console.error("エラー:", error);
-        errorMessage.value = error.response?.data?.message || "リクエスト失敗";
-        alert("エラー：" + errorMessage.value);
+        if (error.response?.status === 404) {
+            alert("部屋が見つかりませんでした");
+            return;
+        }
+        else {
+            errorMessage.value = error.response?.data?.message || "リクエスト失敗";
+            alert("エラー：" + errorMessage.value);
+        }
     } finally {
-        isLoading.value = false; // ロード終了
+        joinButton.value?.chnageLoading(false);
     }
 };
 </script>
@@ -119,37 +123,5 @@ ul {
     width: calc(100% - 5px);
     height: 30px;
     margin-top: 5px;
-}
-
-.next-button {
-    width: 100px;
-    height: 35px;
-    margin-top: 25px;
-    background-color: #E0E0E0;
-    border: solid 1px #CACACA;
-    color: black;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-/* スピナーのスタイル */
-.spinner {
-    width: 35px;
-    height: 35px;
-    margin-top: 25px;
-    border: 4px solid #E0E0E0;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
 }
 </style>

@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { onMounted, onUnmounted } from 'vue';
 import { io } from "socket.io-client";
 // urlのqueryを取得
