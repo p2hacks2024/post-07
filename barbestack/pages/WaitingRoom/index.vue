@@ -29,7 +29,8 @@
                     </tbody>
                 </table>
                 <SpinerLodingButton ref="exitWaitingRoomButton" @click="exitWaitingRoom">退室</SpinerLodingButton>
-                <SpinerLodingButton ref="startButton" @click="gameStartButton" v-show="isHost">ゲーム開始</SpinerLodingButton>
+                <SpinerLodingButton ref="startButton" @click="gameStartButton" v-show="isHost">ゲーム開始
+                </SpinerLodingButton>
             </div>
         </BodyField>
     </div>
@@ -60,7 +61,6 @@ interface Player {
 const players = ref<Player[]>([]);
 const playerId = ref(0);
 const isHost = ref(false);
-
 const isExit = ref(true);
 
 onMounted(async () => {
@@ -107,8 +107,6 @@ onMounted(async () => {
     });
 
     try {
-        const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
-
         const response = await axios.get(
             `${url}/rooms/${roomId.value}/players`
         );
@@ -168,7 +166,13 @@ const exitWaitingRoom = async () => {
 const gameStartButton = () => {
     startButton.value?.chnageLoading(true);
     console.log("gameStartButton");
-    socket.value.emit("start_event", { room: roomId.value });
+
+    if (players.value.length <= 1) {
+        alert("プレイヤーが2人以上いる必要があります");
+    }
+    else {
+        socket.value.emit("start_event", { room: roomId.value });
+    }
     startButton.value?.chnageLoading(false);
 }
 </script>

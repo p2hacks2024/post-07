@@ -48,9 +48,17 @@ const flashPattern = ref("");
 const roomId = ref("");
 const playerId = ref(0);
 
+let killCount = 0;
+
+interface Player {
+    name: string;
+    player_id: number;
+}
+const players = ref<Player[]>([]);
+
 const socket = ref(io(useRuntimeConfig().public.webSocketApiUrl));
 
-onMounted(() => {
+onMounted(async () => {
     const query = route.query;
     roomId.value = query.room_id as string;
     playerId.value = Number(query.player_id) as number;
@@ -59,15 +67,49 @@ onMounted(() => {
 
     startCamera();
 
+    try {
+        const response = await axios.get(
+            `${url}/rooms/${roomId.value}/players`
+        );
+
+        if (response.status === 200) {
+            console.log(response);
+            players.value = response.data.players;
+        }
+    } catch (error: any) {
+        console.error("エラー:", error);
+        const errorMessage = error.response?.data?.message || "リクエスト失敗";
+        alert("エラー：" + errorMessage);
+    }
+
     socket.value.on("kill_event", (data: any) => {
         console.log("kill_event:", data);
-        addKillLog(data.killer, data.victim);
+        // plyaers.value内のplayer_idとdata.killerが一致する要素を取得
+        const killerName = String(players.value.find(player => Number(player.player_id) === Number(data.killer))?.name);
+        // plyaers.value内のplayer_idとdata.victimが一致する要素を取得
+        const victimName = String(players.value.find(player => Number(player.player_id) === Number(data.victim))?.name);
+        console.log(killerName, victimName);
+        addKillLog(killerName, victimName);
+
+        if (Number(data.victim) === Number(playerId.value)) {
+            gameOver(0);
+        }
     });
 });
 
+const gameOver = (isWinner: number) => {
+    router.push({
+        name: "Result",
+        query: {
+            room_id: roomId.value,
+            is_winner: isWinner,
+            kill_count: killCount
+        }
+    });
+};
+
 onUnmounted(() => {
     stopCamera();
-    exitWaitingRoom();
 });
 
 const startCamera = () => {
@@ -105,12 +147,16 @@ const triggerCameraScan = async () => {
 
                     try {
                         const response = await axios.put(
-                            `${url}/rooms/${roomId.value}/players/${numberPart}/kill?killed_id=${encodeURIComponent(numberPart)}`
+                            `${url}/rooms/${roomId.value}/players/${numberPart}/kill?killed_id=${encodeURIComponent(Number(playerId.value))}&victim_id=${encodeURIComponent(Number(numberPart))}`
                         );
 
                         if (response.status === 200) {
                             // alert(response?.data?.alive_players);
                             console.log(response?.data?.alive_players);
+                            killCount++;
+                            if (response?.data?.alive_players <= 1) {
+                                gameOver(1);
+                            }
                         }
                     } catch (error: any) {
                         console.error("エラー:", error);
