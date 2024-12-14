@@ -16,11 +16,11 @@
                             <th class="qr-code-print">Print</th>
                         </tr>
                         <tr v-for="player in players">
-                            <td :class="player.id == playerId ? 'me-player' : ''">
+                            <td :class="player.player_id == playerId ? 'me-player' : ''">
                                 {{ player.name }}
                             </td>
                             <td>
-                                <QRCodeGenerator :msg="'barbestack/' + player.id" class="qr-code" />
+                                <QRCodeGenerator :msg="'barbestack/' + player.player_id" class="qr-code" />
                             </td>
                             <td>
                                 <button>PDF出力</button>
@@ -28,38 +28,85 @@
                         </tr>
                     </tbody>
                 </table>
-                <button class="exit-game-button" @click="exitWaitingRoom">退室</button>
-                <button class="exit-game-button" @click="exitWaitingRoom" v-show="isHost">ゲーム開始</button>
+                <SpinerLodingButton ref="exitWaitingRoomButton" @click="exitWaitingRoom">退室</SpinerLodingButton>
+                <SpinerLodingButton ref="startButton" @click="gameStartButton" v-show="isHost">ゲーム開始</SpinerLodingButton>
             </div>
         </BodyField>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from "vue";
+import { onMounted, onUnmounted } from 'vue';
+import { io } from "socket.io-client";
 // urlのqueryを取得
 import { useRoute, useRouter } from 'vue-router';
 import axios from "axios";
-
-const roomId = ref("");
-interface Player {
-    name: string;
-    id: number;
-}
-const players = ref<Player[]>([]);
-const playerId = ref(0);
-const isHost = ref(false);
 
 const url = useRuntimeConfig().public.flaskApiUrl;
 const route = useRoute();
 const router = useRouter();
 
+const socket = ref(io("wss://gmktec-tailscale:5000"));
+
+const exitWaitingRoomButton = ref<any>(null); // ボタンコンポーネントへの参照
+const startButton = ref<any>(null); // ボタンコンポーネントへの参照
+
+const roomId = ref("");
+interface Player {
+    name: string;
+    player_id: number;
+}
+const players = ref<Player[]>([]);
+const playerId = ref(0);
+const isHost = ref(false);
+
+let isExit = true;
+
 onMounted(async () => {
     const query = route.query;
     roomId.value = query.room_id as string;
     playerId.value = Number(query.player_id) as number;
-    isHost.value = query.is_host === "1";
+    isHost.value = (query.is_host === "1");
     console.log(query.room_id);
+
+    // 部屋に参加
+    socket.value.emit("join", { room: roomId.value });
+    socket.value.emit("diff_player", { room: roomId.value });
+
+    // サーバーからの応答を受け取る
+    socket.value.on("start_event", (data: any) => {
+        isExit = false;
+        console.log("ゲーム開始イベントを受信:", data);
+        // ページ遷移
+        router.push({
+            name: "Game",
+            query: {
+                room_id: roomId.value,
+                player_id: playerId.value,
+            }
+        });
+    });
+
+    socket.value.on("diff_player", async (data: any) => {
+        console.log("プレーヤー数変更:", data);
+        try {
+            const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
+
+            const response = await axios.get(
+                `${url}/rooms/${roomId.value}/players`
+            );
+
+            if (response.status === 200) {
+                console.log(response);
+                players.value = response.data.players;
+            }
+        } catch (error: any) {
+            console.error("エラー:", error);
+            const errorMessage = error.response?.data?.message || "リクエスト失敗";
+            alert("エラー：" + errorMessage);
+        }
+    });
 
     try {
         const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
@@ -79,8 +126,15 @@ onMounted(async () => {
     }
 });
 
+onUnmounted(() => {
+    if (isExit) {
+        exitWaitingRoom();
+    }
+});
+
 const exitWaitingRoom = async () => {
     console.log("exitWaitingRoom");
+    exitWaitingRoomButton.value?.chnageLoading(true);
 
     try {
         const response = await axios.delete(
@@ -102,6 +156,22 @@ const exitWaitingRoom = async () => {
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
         alert("エラー：" + errorMessage);
     }
+
+    socket.value.emit("diff_player", { room: roomId.value });
+    socket.value.emit("leave", { room: roomId.value });
+    // ソケットをクリーンアップ
+    socket.value.off("start_event");
+    socket.value.off("diff_player");
+    socket.value.disconnect();
+
+    exitWaitingRoomButton.value?.chnageLoading(false);
+}
+
+const gameStartButton = () => {
+    startButton.value?.chnageLoading(true);
+    console.log("gameStartButton");
+    socket.value.emit("start_event", { room: roomId.value });
+    startButton.value?.chnageLoading(false);
 }
 </script>
 
@@ -158,7 +228,7 @@ th {
     border: 1px solid black;
 }
 
-.exit-game-button {
+.game-button {
     width: 100px;
     height: 35px;
     margin-top: 25px;
@@ -172,5 +242,26 @@ th {
 
 .me-player {
     text-decoration: underline;
+}
+
+/* スピナーのスタイル */
+.spinner {
+    width: 35px;
+    height: 35px;
+    margin-top: 25px;
+    border: 4px solid #E0E0E0;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

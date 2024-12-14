@@ -15,9 +15,7 @@
                     <input type="text" size="6" v-model="playerName" placeholder="ユーザー名を入力してください" />
                 </div>
                 <div>
-                    <!-- ロード中でない場合はボタン、ロード中はスピナー -->
-                    <button v-if="!isLoading" @click="createRoom" class="next-button">作成</button>
-                    <div v-else class="spinner"></div>
+                    <SpinerLodingButton ref="createButton" @click="createRoom">作成</SpinerLodingButton>
                 </div>
             </div>
         </BodyField>
@@ -31,21 +29,22 @@ import axios from "axios";
 
 const router = useRouter();
 
+const createButton = ref<any>(null); // ボタンコンポーネントへの参照
+
 // データの定義
 const roomId = ref<string | null>(null);
 const playerName = ref<string>(""); // ユーザー名の入力をバインド
 const errorMessage = ref<string | null>(null);
-const isLoading = ref(false); // ロード中フラグ
 
 // 部屋作成関数
 const createRoom = async () => {
-    isLoading.value = true; // ロード中に設定
+    createButton.value?.chnageLoading(true);
     try {
         const url = useRuntimeConfig().public.flaskApiUrl; // Flask API のエンドポイント
 
         if (!playerName.value.trim()) {
             alert("ユーザー名を入力してください");
-            isLoading.value = false;
+            createButton.value?.chnageLoading(false);
             return;
         }
 
@@ -86,7 +85,7 @@ const createRoom = async () => {
         errorMessage.value = error.response?.data?.message || "リクエスト失敗";
         alert("エラー：" + errorMessage.value);
     } finally {
-        isLoading.value = false; // ロード終了
+        createButton.value?.chnageLoading(false);
     }
 };
 </script>
@@ -94,7 +93,7 @@ const createRoom = async () => {
 <style scoped>
 ul {
     margin-top: 10px;
-    margin-left: 20px;
+    margin-left: 25px;
     line-height: 30px;
 }
 
