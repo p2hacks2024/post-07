@@ -16,7 +16,7 @@
                             <th class="qr-code-print">Print</th>
                         </tr>
                         <tr v-for="player in players">
-                            <td :class="player.id == playerId ? 'me-player' : ''">
+                            <td :class="player.player_id == playerId ? 'me-player' : ''">
                                 {{ player.name }}
                             </td>
                             <td>
@@ -28,8 +28,8 @@
                         </tr>
                     </tbody>
                 </table>
-                <button class="game-button" @click="exitWaitingRoom">退室</button>
-                <button class="game-button" @click="gameStartButton" v-show="isHost">ゲーム開始</button>
+                <SpinerLodingButton ref="exitWaitingRoomButton" @click="exitWaitingRoom">退室</SpinerLodingButton>
+                <SpinerLodingButton ref="startButton" @click="gameStartButton" v-show="isHost">ゲーム開始</SpinerLodingButton>
             </div>
         </BodyField>
     </div>
@@ -49,6 +49,9 @@ const router = useRouter();
 
 const socket = ref(io("wss://gmktec-tailscale:5000"));
 
+const exitWaitingRoomButton = ref<any>(null); // ボタンコンポーネントへの参照
+const startButton = ref<any>(null); // ボタンコンポーネントへの参照
+
 const roomId = ref("");
 interface Player {
     name: string;
@@ -57,7 +60,6 @@ interface Player {
 const players = ref<Player[]>([]);
 const playerId = ref(0);
 const isHost = ref(false);
-const isLoading = ref(false); // ロード中フラグ
 
 let isExit = true;
 
@@ -132,6 +134,7 @@ onUnmounted(() => {
 
 const exitWaitingRoom = async () => {
     console.log("exitWaitingRoom");
+    exitWaitingRoomButton.value?.chnageLoading(true);
 
     try {
         const response = await axios.delete(
@@ -160,11 +163,15 @@ const exitWaitingRoom = async () => {
     socket.value.off("start_event");
     socket.value.off("diff_player");
     socket.value.disconnect();
+
+    exitWaitingRoomButton.value?.chnageLoading(false);
 }
 
 const gameStartButton = () => {
+    startButton.value?.chnageLoading(true);
     console.log("gameStartButton");
     socket.value.emit("start_event", { room: roomId.value });
+    startButton.value?.chnageLoading(false);
 }
 </script>
 
