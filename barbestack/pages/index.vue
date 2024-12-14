@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div>
         <Header />
         <!-- BodyFieldセクション -->
         <BodyField title="見出し">
@@ -29,12 +29,6 @@
 </scirpt>
 
 <style scoped>
-.container {
-    background-color: #f4f4f4;
-    min-height: 100vh;
-    padding: 10px;
-}
-
 .column {
     display: flex;
     flex-direction: column;
