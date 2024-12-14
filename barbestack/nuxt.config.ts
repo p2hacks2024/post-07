@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     public: {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
       flaskApiUrl: process.env.FLASK_API_URL,
+      webSocketApiUrl: process.env.WEBSOCKET_API_URL,
     },
   },
   app: {
