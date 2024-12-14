@@ -26,7 +26,7 @@
 </template>
 
 <scirpt setup lang="ts">
-</script>
+</scirpt>
 
 <style scoped>
 .container {
@@ -77,7 +77,7 @@
     color: #007bff;
     text-decoration: none;
     font-size: 14px;
-    align-self: flex-start;
+    align-self: flex - start;
     margin-top: 5px;
 }
 </style>
