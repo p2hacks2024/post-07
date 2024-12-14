@@ -1,6 +1,6 @@
 # P2HACKS2024 アピールシート 
 
-**プロダクト名 **
+**プロダクト名**
 QR行動<br />
 ![image](https://github.com/user-attachments/assets/70df301d-e1a2-4efc-8db5-b295d51c8a7a)
 
