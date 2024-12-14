@@ -20,10 +20,10 @@
                                 {{ player.name }}
                             </td>
                             <td>
-                                <QRCodeGenerator :msg="'barbestack/' + player.player_id" class="qr-code" />
+                                <QRCodeGenerator :msg="'barbestack/' + player.player_id" class="qr-code" :data-id="player.player_id" />
                             </td>
                             <td>
-                                <button>PDF出力</button>
+                                <button @click="generatePDF(player.player_id)">PDF出力</button>
                             </td>
                         </tr>
                     </tbody>
@@ -43,6 +43,48 @@ import { io } from "socket.io-client";
 // urlのqueryを取得
 import { useRoute, useRouter } from 'vue-router';
 import axios from "axios";
+import jsPDF from "jspdf";
+
+const generatePDF = (playerId: number) => {
+    // 対象のQRコード要素を取得
+    const qrCodeElement = document.querySelector(`.qr-code[data-id="${playerId}"]`) as HTMLElement;
+
+    if (!qrCodeElement) {
+        alert("QRコードが見つかりません");
+        return;
+    }
+
+    // QRコードをCanvasに描画
+    const canvas = document.createElement("canvas");
+    canvas.width = 2480; // A4サイズの幅（ピクセル、300dpi換算）
+    canvas.height = 3508; // A4サイズの高さ（ピクセル、300dpi換算）
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+        alert("Canvasコンテキストが取得できません");
+        return;
+    }
+
+    // QRコードをCanvasに描画（スタイルを調整）
+    const qrCodeImage = qrCodeElement.querySelector("img") as HTMLImageElement;
+    if (qrCodeImage) {
+        context.fillStyle = "white";
+        context.fillRect(0, 0, canvas.width, canvas.height); // 背景を白で塗りつぶす
+        const size = Math.min(canvas.width, canvas.height); // A4いっぱいに表示
+        context.drawImage(qrCodeImage, (canvas.width - size) / 2, (canvas.height - size) / 2, size, size);
+    }
+
+    // jsPDFでPDFを生成
+    const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4",
+    });
+
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 595, 842); // PDFにCanvasを追加
+    pdf.save(`qr_code_${playerId}.pdf`); // PDFを保存
+};
+
 
 const url = useRuntimeConfig().public.flaskApiUrl;
 const route = useRoute();
