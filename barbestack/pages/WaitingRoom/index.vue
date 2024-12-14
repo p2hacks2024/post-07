@@ -150,7 +150,7 @@ const exitWaitingRoom = async () => {
     } catch (error: any) {
         console.error("エラー:", error);
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
-        alert("エラー：" + errorMessage);
+        // alert("エラー：" + errorMessage);
     }
 
     socket.value.emit("diff_player", { room: roomId.value });
