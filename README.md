@@ -5,7 +5,8 @@ post-07 バーベスタック
 ### プロダクト名
 **QR行動**
 
-![image](https://github.com/user-attachments/assets/70df301d-e1a2-4efc-8db5-b295d51c8a7a)<br />
+![image](https://github.com/user-attachments/assets/82901cfa-d16c-40d8-93cb-547303c54acb)
+
 成果物のURL：https://qrkodo.kcat.dev
 
 ### コンセプト
@@ -27,7 +28,11 @@ QRコードを撮影されたプレイヤーは撃破となる。最後まで生
 ### 推しポイント
 単位をかけたデスゲームというコンセプトに沿って、本学で利用されている教務システム「**Students**」に準拠したデザインにした。  
 
-### スクリーンショット
+## スクリーンショット
+
+<p>
+  <img src="https://github.com/user-attachments/assets/e033fac2-90be-4ddc-8916-32c32a7f78fb" width="25%"><img src="https://github.com/user-attachments/assets/b2b010f1-304e-46fb-8196-5dfcaf673d46" width="25%"><img src="https://github.com/user-attachments/assets/4cd779f1-a233-4e47-85bb-5d2dae43b31f" width="25%"><img src="https://github.com/user-attachments/assets/1c4f467d-d8ad-4a31-9cd6-f8aafcbbb471" width="25%"><img src="https://github.com/user-attachments/assets/8d295b4a-dc56-4c3d-962f-e671023b53dc" width="25%"><img src="https://github.com/user-attachments/assets/04417365-a002-4a89-b953-09a87a4ac801" width="25%"><img src="https://github.com/user-attachments/assets/d5d6ca51-5d51-4763-b4e1-5ba4162d93d1" width="25%"><img src="https://github.com/user-attachments/assets/8f67d59a-8366-4844-85f8-2981b3610ea8" width="25%">
+</p>
 
 ## 開発体制  
 
