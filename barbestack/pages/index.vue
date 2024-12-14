@@ -2,13 +2,21 @@
     <div>
         <Header />
         <!-- BodyFieldセクション -->
-        <BodyField title="見出し">
+        <BodyField title="QR行動">
             <div class="column">
                 <div class="card">
                     <span class="circle-icon">バ</span>
                     <div class="info">
+                        <h3>QR行動について</h3>
+                        <p>ストーリー：QR行動はマッドサイエンティストの教授によって開発された、単位をかけたデスゲームです。</p>
+                        <a href="https://github.com/p2hacks2024/post-07" class="link">詳しく見る</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <span class="circle-icon">バ</span>
+                    <div class="info">
                         <h3>ゲームに参加する</h3>
-                        <p>ゲームに参加するに関する説明文</p>
+                        <p>ゲームに参加する</p>
                         <NuxtLink to="/JoinRoom" class="link">詳しく見る</NuxtLink>
                     </div>
                 </div>
@@ -16,7 +24,7 @@
                     <span class="circle-icon">バ</span>
                     <div class="info">
                         <h3>ゲームを開催する</h3>
-                        <p>ゲームを開催するに関する説明文</p>
+                        <p>ゲームを開催する</p>
                         <NuxtLink to="/CreateRoom" class="link">詳しく見る</NuxtLink>
                     </div>
                 </div>
@@ -35,6 +43,10 @@
     gap: 20px;
 }
 
+.info {
+    width: 100%;
+}
+
 .card {
     display: flex;
     align-items: center;
@@ -45,6 +57,7 @@
 }
 
 .circle-icon {
+    flex-shrink: 0;
     background-color: #ccc;
     border-radius: 50%;
     width: 40px;
