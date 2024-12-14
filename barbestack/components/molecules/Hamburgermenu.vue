@@ -9,6 +9,11 @@
 
     <div :class="[isClick ? 'menu-open' : 'menu-close', 'menu']" v-show="isClick" @click="isClick = false">
         <ul>
+            <li><a href="https://qrkodo.kcat.dev" class="link">Product/https://qrkodo.kcat.dev</a></li>
+            <li><a href="https://github.com/p2hacks2024/post-07" class="link">github/Frontend</a></li>
+            <li><a href="https://github.com/kCat-fun/barbestack-p2hacks-backend-vercel" class="link">github/Backend-WebAPI</a></li>
+            <li><a href="https://github.com/kCat-fun/websockets-api-barbestack-p2hacks2024" class="link">github/Backend-SocketIO</a></li>
+            <li><a href="https://www.figma.com/design/jv6MKyLpSgZ68huaMyl0AY/P2HACKS%E7%94%BB%E9%9D%A2%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3?node-id=0-1&t=UR1bJbl0Zjm2Mb43-1" class="link">Figma/Design</a></li>
         </ul>
     </div>
 </template>
@@ -122,7 +127,7 @@ const isClick = ref(false);
     width: 100%;
     max-width: 500px;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.75);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -151,7 +156,7 @@ const isClick = ref(false);
 ul {
     animation: menu-str-open 0.6s;
     margin: auto;
-    line-height: 55px;
+    line-height: 50px;
 }
 
 li {
@@ -159,7 +164,7 @@ li {
 }
 
 .link {
-    font-size: 30px;
+    font-size: 18px;
     color: white;
     text-decoration: underline;
     text-align: center;
