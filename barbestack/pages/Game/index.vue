@@ -79,7 +79,7 @@ onMounted(async () => {
     } catch (error: any) {
         console.error("エラー:", error);
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
-        alert("エラー：" + errorMessage);
+        // alert("エラー：" + errorMessage);
     }
 
     // 180秒に1回位置情報を送信
@@ -100,7 +100,7 @@ onMounted(async () => {
             } catch (error: any) {
                 console.error("エラー:", error);
                 const errorMessage = error.response?.data?.message || "リクエスト失敗";
-                alert("エラー：" + errorMessage);
+                // alert("エラー：" + errorMessage);
             }
         });
         setTimeout(async () => {
@@ -125,10 +125,10 @@ onMounted(async () => {
             } catch (error: any) {
                 console.error("エラー:", error);
                 const errorMessage = error.response?.data?.message || "リクエスト失敗";
-                alert("エラー：" + errorMessage);
+                // alert("エラー：" + errorMessage);
             }
-        }, 3000/*20000*/);
-    }, 10000 /*180000*/);
+        }, 5000/*20000*/);
+    }, 15000 /*180000*/);
 
     socket.value.on("kill_event", (data: any) => {
         console.log("kill_event:", data);
@@ -159,7 +159,7 @@ const gameOver = async (isWinner: number) => {
     } catch (error: any) {
         console.error("エラー:", error);
         const errorMessage = error.response?.data?.message || "リクエスト失敗";
-        alert("エラー：" + errorMessage);
+        // alert("エラー：" + errorMessage);
     }
 
     router.push({
