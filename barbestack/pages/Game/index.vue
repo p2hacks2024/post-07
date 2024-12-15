@@ -84,13 +84,13 @@ onMounted(async () => {
 
     // 180秒に1回位置情報を送信
     setInterval(() => {
-        navigator.geolocation.watchPosition(async (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = String(position.coords.latitude);
+            const lng = String(position.coords.longitude);
 
             try {
                 const response = await axios.put(
-                    `${url}/rooms/${roomId.value}/players/${playerId.value}?lat=${encodeURIComponent(Number(lat))}&lng=${encodeURIComponent(Number(lng))}&spec=0`,
+                    `${url}/rooms/${roomId.value}/players/${playerId.value}?lat=${encodeURIComponent(String(lat))}&lng=${encodeURIComponent(String(lng))}&spec=0`,
                 );
 
                 if (response.status === 200) {
@@ -114,7 +114,7 @@ onMounted(async () => {
                     players.value = response.data.players;
 
                     const playersLocation = response.data.players.map((player: any) => {
-                        return { lat: player.lat, lng: player.lng };
+                        return { lat: Number(player.lat), lng: Number(player.lng) };
                     });
 
                     // playersLocation.push({ lat: 41.84162548819161, lng: 140.76630721848127 });
